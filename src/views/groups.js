@@ -1,6 +1,7 @@
 import { store, CLUBS, CHALLENGES, EVENTS, RACES, challengeProgress } from '../store.js';
 import { icon, esc, AY_KISA, GUN_KISA, SPORTS, shortDate } from '../util.js';
 import { LOCALE } from '../i18n.js';
+import { raceArt, clubBadge, challengeMedal } from '../features/art.js';
 import { toast } from '../ui.js';
 
 const TABS = [['challenges', 'Meydan Okumalar'], ['clubs', 'Kulüpler'], ['events', 'Etkinlikler']];
@@ -37,7 +38,7 @@ function challenges(s) {
     const joined = s.joinedChallenges.includes(c.id);
     const p = challengeProgress(c);
     return `<div class="card ch-card">
-      <div class="ch-badge" style="--c:${c.color}">${icon('trophy', 30)}</div>
+      <div class="ch-medal">${challengeMedal(c, p, joined)}</div>
       <div class="ch-body"><b>${esc(c.title)}</b><small>${esc(c.desc)}</small>
         ${joined ? `<div class="bar"><i style="width:${(p * 100).toFixed(0)}%;background:${c.color}"></i></div><small>%${(p * 100).toFixed(0)} tamamlandı</small>` : ''}
       </div>
@@ -50,7 +51,7 @@ function clubs(s) {
   return `<div class="stack">${CLUBS.map((c) => {
     const joined = s.joinedClubs.includes(c.id);
     return `<div class="card club">
-      <div class="club-logo">${icon(SPORTS[c.sport].icon, 26)}</div>
+      <div class="club-logo">${clubBadge(c)}</div>
       <div class="ch-body"><b>${esc(c.name)}</b><small>${SPORTS[c.sport].label} · ${esc(c.place)} · ${c.members + (joined ? 1 : 0)} üye</small></div>
       <button class="btn ${joined ? 'ghost' : 'primary'} sm" data-club="${c.id}">${joined ? 'Üyesin' : 'Katıl'}</button>
     </div>`;
@@ -71,17 +72,11 @@ function events(s) {
     <div class="sec-head"><h2>Yarışlar</h2><span>Tümü ${icon('chevRight', 16)}</span></div>
     <div class="stack">${RACES.map((r) => `
       <div class="card race">
-        <div class="race-art framed" style="--h:${r.hue}">${raceArt(r.hue)}<span class="date-tag">${shortDate(r.date)}</span></div>
+        <div class="race-art framed" style="--h:${r.hue}">${raceArt(r)}<span class="race-dist">${r.dist}</span><span class="date-tag">${shortDate(r.date)}</span></div>
         <div class="race-body"><b>${esc(r.title)}</b>
           <small>${icon('pin', 16)} ${esc(r.place)}</small>
           <small>${icon('shoe', 16)} ${r.dist}</small>
           <small>${icon('users', 16)} ${r.runners.toLocaleString(LOCALE)} MoveCircle sporcusu katılıyor</small>
         </div>
       </div>`).join('')}</div>`;
-}
-
-// Özgün, kod ile çizilmiş yarış görseli (fotoğraf yok)
-function raceArt(h) {
-  const hills = Array.from({ length: 6 }, (_, i) => `<path d="M0 ${150 - i * 6} Q ${60 + i * 40} ${90 - i * 8} ${160 + i * 30} ${130 - i * 4} T 400 ${120 - i * 5} V200 H0Z" fill="hsl(${h} 45% ${18 + i * 6}%)" opacity=".9" class="hill" style="--i:${i}"/>`).reverse().join('');
-  return `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g${h}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="hsl(${h + 180} 60% 70%)"/><stop offset="1" stop-color="hsl(${h} 80% 65%)"/></linearGradient></defs><rect width="400" height="200" fill="url(#g${h})"/><circle cx="300" cy="60" r="26" fill="#fff8" class="sun"/>${hills}<path d="M20 190 C120 160 200 175 260 150 S 360 120 400 125" style="stroke:var(--accent)" stroke-width="4" fill="none" stroke-dasharray="10 8" class="march"/><circle r="6" fill="#fff"><animateMotion dur="7s" repeatCount="indefinite" path="M20 190 C120 160 200 175 260 150 S 360 120 400 125"/></circle></svg>`;
 }

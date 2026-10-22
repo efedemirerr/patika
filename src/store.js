@@ -29,8 +29,8 @@ export const EVENTS = [
 ];
 
 export const RACES = [
-  { id: 'rc1', title: 'Liman Şehri Yarı Maratonu', date: offsetDate(10, 9), place: 'Sahilkent, Liman Şehri', dist: '10K · 21K', runners: 1240, hue: 28 },
-  { id: 'rc2', title: 'Kuzeytepe Trail Festivali', date: offsetDate(24, 8), place: 'Kuzeytepe Ormanı', dist: '15K · 30K', runners: 410, hue: 140 },
+  { id: 'rc1', title: 'Liman Şehri Yarı Maratonu', date: offsetDate(10, 9), place: 'Sahilkent, Liman Şehri', dist: '10K · 21K', runners: 1240, hue: 28, scene: 'city' },
+  { id: 'rc2', title: 'Kuzeytepe Trail Festivali', date: offsetDate(24, 8), place: 'Kuzeytepe Ormanı', dist: '15K · 30K', runners: 410, hue: 140, scene: 'trail' },
 ];
 
 export const NOTIFS = [

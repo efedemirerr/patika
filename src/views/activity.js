@@ -1,3 +1,4 @@
+import L from 'leaflet';
 import { store } from '../store.js';
 import { createCityMap, routeLayer, dotMarker, fitPts } from '../map/render.js';
 import { icon, avatar, esc, km, pace, duration, longDate, SPORTS, upper } from '../util.js';
@@ -10,6 +11,8 @@ import { openFilm } from '../features/film.js';
 import { silhouetteSVG } from '../features/character.js';
 import { countUp, frameMarks } from '../features/motion.js';
 import { coordLabel } from './common.js';
+import { rhythmData, staffSVG, playRhythm } from '../features/rhythm.js';
+import { capsules, capsuleMarker, dropCapsuleSheet } from '../features/capsule.js';
 
 export function renderActivity(root, params, id) {
   const a = store.activity(id);
@@ -17,6 +20,8 @@ export function renderActivity(root, params, id) {
   const u = store.user(a.userId);
   const pts = store.activityPts(a);
   let cleanup = () => {};
+  let stopPlay = null, dropMode = false;
+  const setDrop = (v) => { dropMode = v; root.querySelector('.detail-map')?.classList.toggle('dropping', v); };
   let closeFilm = null;
 
   const draw = () => {
@@ -24,6 +29,7 @@ export function renderActivity(root, params, id) {
     root.innerHTML = `
       <div class="detail-map framed"><div id="map" class="map-fill"></div>${frameMarks(upper(tr(SPORTS[a.type].label)), coordLabel(pts[0]))}
         <button class="fab back" data-back>${icon('chevLeft', 26)}</button>
+        <button class="cap-cta" data-capdrop>${icon('pin', 16)} Kapsül bırak</button>
         <button class="film-cta" data-film>${icon('play', 18)} Koşu Filmi</button></div>
       <div class="detail">
         <header class="act-head">${avatar(u)}<div><div class="act-user">${esc(u.name)}</div><div class="act-meta">${icon(SPORTS[a.type].icon, 16)} ${longDate(a.date)}</div></div></header>
@@ -42,6 +48,11 @@ export function renderActivity(root, params, id) {
           <span><b>Rota Mührü</b><small>Bu koşudan üretilen tekil işaret. Kartpostala dönüştür ve paylaş.</small></span>
           ${icon('chevRight', 20)}
         </button>
+        <section class="rhythm card">
+          <div class="rhythm-head"><div><b>Ritim Partisyonu</b><small>Her km bir nota: hızlı km yüksek, yavaş km alçak.</small></div>
+          <button class="btn primary sm" data-play>${icon('play', 14)} Dinle</button></div>
+          <div class="staff-wrap">${staffSVG(rhythmData(a))}</div>
+        </section>
         <h3>Yükselti silueti</h3><div class="sil">${silhouetteSVG(pts)}</div>
         ${a.type !== 'ride' ? `<h3>Bölümler</h3>${splits(a)}` : ''}
         <div class="act-actions">
@@ -60,6 +71,17 @@ export function renderActivity(root, params, id) {
     dotMarker(ctx, pts[pts.length - 1], 'dot-end').addTo(ctx.map);
     fitPts(ctx, pts, 40);
     countUp(root.querySelector('.grid-stats'));
+    const capLayer = L.layerGroup().addTo(ctx.map);
+    const drawCaps = () => { capLayer.clearLayers(); capsules().forEach((c) => capsuleMarker(ctx, c).addTo(capLayer)); };
+    drawCaps();
+    ctx.map.on('click', (e) => {
+      if (!dropMode) return;
+      // Dokunulan yere en yakın rota noktasına kapsül bırak
+      const p = [e.latlng.lng, e.latlng.lat];
+      const near = pts.reduce((b, q) => (Math.hypot(q[0] - p[0], q[1] - p[1]) < Math.hypot(b[0] - p[0], b[1] - p[1]) ? q : b), pts[0]);
+      setDrop(false);
+      dropCapsuleSheet(near, drawCaps);
+    });
     cleanup = () => ctx.map.remove();
   };
 
@@ -71,6 +93,18 @@ export function renderActivity(root, params, id) {
     if (t.dataset.share !== undefined) shareSheet();
     if (t.dataset.film !== undefined) closeFilm = openFilm(a, { onClose: () => (closeFilm = null) });
     if (t.dataset.seal !== undefined) sealSheet(a);
+    if (t.dataset.capdrop !== undefined) { setDrop(!dropMode); if (dropMode) toast('Kapsülü bırakmak için rotada bir noktaya dokun'); }
+    if (t.dataset.play !== undefined) {
+      if (stopPlay) { stopPlay(); return; }
+      const notes = rhythmData(a);
+      const svg = root.querySelector('.staff');
+      t.innerHTML = `${icon('pause', 14)} Durdur`;
+      stopPlay = playRhythm(notes, (i) => {
+        svg.querySelectorAll('.note').forEach((n) => n.classList.toggle('on', Number(n.dataset.i) === i));
+        const nt = svg.querySelector(`.note[data-i="${i}"]`);
+        nt?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }, () => { stopPlay = null; svg.querySelectorAll('.note').forEach((n) => n.classList.remove('on')); t.innerHTML = `${icon('play', 14)} Dinle`; });
+    }
     if (t.dataset.postcard !== undefined) postcardSheet(a);
     if (t.dataset.del !== undefined && confirm('Aktivite silinsin mi?')) {
       store.update((s) => (s.activities = s.activities.filter((x) => x.id !== a.id)));
@@ -91,7 +125,7 @@ export function renderActivity(root, params, id) {
     history.replaceState(null, '', `#/activity/${a.id}`);
     setTimeout(() => (closeFilm = openFilm(a, { onClose: () => (closeFilm = null) })), 350);
   }
-  return () => { closeFilm?.(); cleanup(); };
+  return () => { closeFilm?.(); stopPlay?.(); cleanup(); };
 }
 
 function splits(a) {

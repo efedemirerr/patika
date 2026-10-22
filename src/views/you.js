@@ -5,6 +5,7 @@ import { activityCard, bindActivityList } from './common.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { applyPalette, paletteBand } from '../features/palette.js';
 import { countUp, observeDraw, frameMarks } from '../features/motion.js';
+import { signatureData, signatureSVG, shareSignature } from '../features/signature.js';
 
 const FILTERS = [[null, 'Egzersiz', 'pulse'], ['run', 'Koşu', 'shoe'], ['ride', 'Bisiklet', 'bike'], ['walk', 'Yürüyüş', 'walk']];
 
@@ -45,7 +46,7 @@ export function renderYou(root, params, sub) {
   const progress = () => {
     const w = weeklyTotals(sport);
     const cur = w[w.length - 1];
-    return `${rings(weeklyTotals(null, 26))}<div class="card progress">
+    return `${rings(weeklyTotals(null, 26))}${signatureCard()}<div class="card progress">
       <div class="chips scroll">${FILTERS.map(([k, l, ic]) => `<button class="chip ${k === sport ? 'active' : ''}" data-sport="${k ?? ''}">${icon(ic, 18)} ${l}</button>`).join('')}</div>
       <h3>Bu hafta</h3>
       <div class="stats3 two"><div><span>Süre</span><b>${duration(cur.duration)}</b></div><div><span>Mesafe</span><b><i data-count="${cur.distance}" data-fmt="km">0</i> km</b></div></div>
@@ -81,6 +82,7 @@ export function renderYou(root, params, sub) {
   };
 
   root.addEventListener('click', (e) => {
+    if (e.target.closest('[data-sigshare]')) { const me = store.get().me; shareSignature(signatureData(), me.name.split(' ').map((p) => p[0]).slice(0, 2).join(''), esc(me.name)).then(() => toast('İmza hazır')).catch(() => toast('Paylaşılamadı')); return; }
     const t = e.target.closest('[data-tab],[data-sport],[data-soon],[data-go],[data-stats],[data-edit],[data-share],[data-settings],[data-add]');
     if (!t) return;
     if (t.dataset.tab) { tab = t.dataset.tab; history.replaceState(null, '', `#/you/${tab}`); draw(); }
@@ -178,5 +180,22 @@ function rings(weeks) {
   return `<div class="card rings-card framed">${frameMarks('YIL HALKALARI', `${n} HAFTA`)}
     <svg class="rings draw-on-view" viewBox="0 0 240 240">${parts}<circle cx="${C}" cy="${C}" r="5" class="ring-core"/></svg>
     <div class="rings-txt"><b data-count="${active}">0</b><span>/${n} hafta hareketli</span><small>Her halka bir hafta. Kalın halka daha uzun süre demek; ara verdiğin haftalar ince kalır, ceza yok.</small></div>
+  </div>`;
+}
+
+// Hareket İmzası kartı
+function signatureCard() {
+  const me = store.get().me;
+  const d = signatureData();
+  const ini = me.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
+  return `<div class="card sig-card framed">${frameMarks('HAREKET İMZASI', `${d.count} AKTİVİTE`)}
+    <div class="sig-wrap">${signatureSVG(d, esc(ini))}</div>
+    <div class="sig-facts">
+      <div><span>En sık saat</span><b>${d.peak}</b></div>
+      <div><span>Yönelim</span><b>${d.heading}</b></div>
+      <div><span>Döngü rotası</span><b>%${d.loopShare}</b></div>
+    </div>
+    <p class="muted small">Dış halka günün saatlerini, iç gül gittiğin yönleri gösterir. Bir puan değil; senin tarzın.</p>
+    <button class="btn outline block" data-sigshare>İmzamı paylaş</button>
   </div>`;
 }

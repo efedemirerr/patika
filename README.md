@@ -24,6 +24,12 @@ Veriler `localStorage` içinde tutulur (`src/store.js`).
 - **Rota Karakter Kartı** — dönüş / yeşil / su / eğim göstergeleri, ruh hâline göre sıralama, göstergeye dokununca haritada vurgu.
 - **Hava Paleti** — vurgu rengi güneşin konumuna göre değişir (Sen → Ayarlar).
 
+## 0.4 ile gelenler (Strava'da olmayanlar)
+- **Gölge Koşucu** — Kayıt ekranında aynı rotadaki en iyi geçmiş koşunla canlı yarış: haritada hayalet nokta, panelde "Gölgenin 12 sn önündesin".
+- **Zaman Kapsülü** — Aktivite detayında "Kapsül bırak" ile rotadaki bir noktaya kendine not bırak; kayıt sırasında oradan geçince zarf açılır.
+- **Ritim Partisyonu** — km bölümleri nota dizeğine yazılır (hızlı km yüksek nota); "Dinle" ile Web Audio üzerinden melodi olarak çalar.
+- **Hareket İmzası** — Sen → İlerleme: günün saatleri (dış halka) ve gidilen yönlerden (iç gül) oluşan kişisel glif; PNG olarak paylaşılır.
+
 ## Dil desteği
 Türkçe ve İngilizce. İlk açılışta cihaz diline göre seçilir; **Sen → Ayarlar → Dil · Language** ile değiştirilir.
 Arayüz metinleri Türkçe yazılır, `src/i18n.js` içindeki sözlük İngilizceye çevirir; tarih, süre ve ondalık biçimleri `src/util.js` dile göre üretir.
@@ -37,7 +43,7 @@ src/
   map/city.js        # kurgusal şehir geometrisi, rotalar, irtifa
   map/render.js      # Leaflet (CRS.Simple) çizimi + mini SVG harita
   views/*.js         # ekranlar
-  features/*.js      # mühür, kartpostal, film, karakter, palet
+  features/*.js      # mühür, kartpostal, film, karakter, palet, gölge/kapsül, ritim, imza, sanat
 android/             # Capacitor Android projesi
 .github/workflows/   # Web + APK derleme
 ```

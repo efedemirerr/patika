@@ -104,12 +104,26 @@ const EN = {
   'Sabah Yürüyüşü': 'Morning Walk', 'Öğleden Sonra Yürüyüşü': 'Afternoon Walk', 'Akşam Yürüyüşü': 'Evening Walk', 'Gece Yürüyüşü': 'Night Walk',
   'Rota mührü': 'Route seal', 'Kurgusal çevrimdışı harita · Liman Şehri': 'Fictional offline map · Liman City',
   'Kordon Atletizm Alanı, Martılı': 'Seafront Track, Martılı', 'Fener Bahçesi, Yelkenli': 'Lighthouse Garden, Yelkenli', 'Sahilkent, Liman Şehri': 'Sahilkent, Liman City',
+  // 0.4
+  'Gölgemle koş': 'Run with my ghost', 'Gölge seninle aynı hizada': 'Your ghost is right beside you',
+  'Kapsül bırak': 'Drop capsule', 'Zaman Kapsülü': 'Time Capsule', 'Mühürle': 'Seal it', 'Kapsül mühürlendi': 'Capsule sealed',
+  'Bu noktaya kendine bir not bırak. Buradan tekrar geçtiğinde açılacak.': "Leave a note to yourself here. It opens the next time you pass by.",
+  'Gelecekteki kendine…': 'To your future self…', 'Devam et': 'Continue', 'Kapsülü bırakmak için rotada bir noktaya dokun': 'Tap a point on the route to drop the capsule',
+  'Geçen ay buradan geçerken 5K’yı ilk kez durmadan koştun. Bugün de yapabilirsin.': 'Last month, passing here, you ran 5K non-stop for the first time. You can do it again today.',
+  'Ritim Partisyonu': 'Rhythm Score', 'Her km bir nota: hızlı km yüksek, yavaş km alçak.': 'Each km is a note: fast km high, slow km low.', 'Dinle': 'Listen', 'Durdur': 'Stop',
+  'HAREKET İMZASI': 'MOVEMENT SIGNATURE', 'En sık saat': 'Favourite time', 'Yönelim': 'Heading', 'Döngü rotası': 'Loop routes',
+  'Dış halka günün saatlerini, iç gül gittiğin yönleri gösterir. Bir puan değil; senin tarzın.': 'The outer ring shows the hours you move, the inner rose the directions you go. Not a score; your style.',
+  'İmzamı paylaş': 'Share my signature', 'İmza hazır': 'Signature ready',
+  'Kuzey': 'North', 'Kuzeydoğu': 'Northeast', 'Doğu': 'East', 'Güneydoğu': 'Southeast', 'Güney': 'South', 'Güneybatı': 'Southwest', 'Batı': 'West', 'Kuzeybatı': 'Northwest',
   // Hava paleti ön ayarları
   'Gece': 'Night', 'Şafak': 'Dawn', 'Sabah': 'Morning', 'Öğle': 'Noon', 'İkindi': 'Afternoon', 'Gün batımı': 'Sunset',
 };
 
 // ---- Kalıplı metinler ----
 const RULES = [
+  [/^Gölgenin (\d+) sn önündesin$/, "You're $1 s ahead of your ghost"], [/^Gölgenin (\d+) sn gerisindesin$/, "You're $1 s behind your ghost"],
+  [/^(\d+) AKTİVİTE$/, '$1 ACTIVITIES'], [/^(.+) tarihinde bıraktın$/, 'You left this on $1'],
+  [/^(Sabah|Öğleden Sonra|Akşam|Gece) · (\d\d–\d\d)$/, (m, a, b) => `${EN[a]} · ${b}`],
   [/^(Günaydın|İyi günler|İyi akşamlar|İyi geceler), (.+)$/, (m, g, n) => `${EN[g]}, ${n}`],
   [/^(.+) · ([\d.,]+) km · (.+) \/km$/, (m, t, k, p) => `${tr(t)} · ${k} km · ${p} /km`],
   [/^(\d+) aktivite$/, '$1 activities'],

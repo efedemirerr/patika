@@ -70,7 +70,7 @@ function events(s) {
     <div class="sec-head"><h2>Yarışlar</h2><span>Tümü ${icon('chevRight', 16)}</span></div>
     <div class="stack">${RACES.map((r) => `
       <div class="card race">
-        <div class="race-art" style="--h:${r.hue}">${raceArt(r.hue)}<span class="date-tag">${shortDate(r.date)}</span></div>
+        <div class="race-art framed" style="--h:${r.hue}">${raceArt(r.hue)}<span class="date-tag">${shortDate(r.date)}</span></div>
         <div class="race-body"><b>${esc(r.title)}</b>
           <small>${icon('pin', 16)} ${esc(r.place)}</small>
           <small>${icon('shoe', 16)} ${r.dist}</small>
@@ -81,6 +81,6 @@ function events(s) {
 
 // Özgün, kod ile çizilmiş yarış görseli (fotoğraf yok)
 function raceArt(h) {
-  const hills = Array.from({ length: 6 }, (_, i) => `<path d="M0 ${150 - i * 6} Q ${60 + i * 40} ${90 - i * 8} ${160 + i * 30} ${130 - i * 4} T 400 ${120 - i * 5} V200 H0Z" fill="hsl(${h} 45% ${18 + i * 6}%)" opacity=".9"/>`).reverse().join('');
-  return `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g${h}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="hsl(${h + 180} 60% 70%)"/><stop offset="1" stop-color="hsl(${h} 80% 65%)"/></linearGradient></defs><rect width="400" height="200" fill="url(#g${h})"/><circle cx="300" cy="60" r="26" fill="#fff8" />${hills}<path d="M20 190 C120 160 200 175 260 150 S 360 120 400 125" stroke="#c6f432" stroke-width="4" fill="none" stroke-dasharray="10 8"/></svg>`;
+  const hills = Array.from({ length: 6 }, (_, i) => `<path d="M0 ${150 - i * 6} Q ${60 + i * 40} ${90 - i * 8} ${160 + i * 30} ${130 - i * 4} T 400 ${120 - i * 5} V200 H0Z" fill="hsl(${h} 45% ${18 + i * 6}%)" opacity=".9" class="hill" style="--i:${i}"/>`).reverse().join('');
+  return `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g${h}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="hsl(${h + 180} 60% 70%)"/><stop offset="1" stop-color="hsl(${h} 80% 65%)"/></linearGradient></defs><rect width="400" height="200" fill="url(#g${h})"/><circle cx="300" cy="60" r="26" fill="#fff8" class="sun"/>${hills}<path d="M20 190 C120 160 200 175 260 150 S 360 120 400 125" style="stroke:var(--accent)" stroke-width="4" fill="none" stroke-dasharray="10 8" class="march"/><circle r="6" fill="#fff"><animateMotion dur="7s" repeatCount="indefinite" path="M20 190 C120 160 200 175 260 150 S 360 120 400 125"/></circle></svg>`;
 }

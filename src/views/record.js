@@ -24,7 +24,7 @@ export function renderRecord(root, params) {
         <button class="fab" data-fit>${icon('locate')}</button>
       </div>
       <div class="rec-panel">
-        <div class="gps">${icon('pulse', 20)} GPS hazır <small>(simülasyon)</small></div>
+        <div class="gps"><span class="gps-bars"><i></i><i></i><i></i><i></i></span> GPS hazır <small>(simülasyon)</small></div>
         <div class="rec-stats">
           <div><b data-v="time">00:00</b><span>Süre</span></div>
           <div><b data-v="pace">–:––</b><span data-v="paceLabel">Bölüm ort. (/km)</span></div>
@@ -45,7 +45,7 @@ export function renderRecord(root, params) {
   const drawPlan = () => {
     plan.clearLayers();
     L.polyline(ctx.lls(st.route.pts), { renderer: ctx.renderer, color: '#ffffff', weight: 3, opacity: 0.35, dashArray: '6 8' }).addTo(plan);
-    if (!me) me = dotMarker(ctx, st.route.pts[0], 'me-dot').addTo(ctx.map);
+    if (!me) me = L.marker(ctx.ll(st.route.pts[0]), { icon: L.divIcon({ className: 'me-live', html: '<i></i><i></i><b></b>', iconSize: [22, 22] }) }).addTo(ctx.map);
     fitPts(ctx, st.route.pts, 70);
   };
 

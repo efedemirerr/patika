@@ -1,3 +1,5 @@
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter-tight';
 import './styles.css';
 import { icon, avatar } from './util.js';
 import { store } from './store.js';
@@ -39,7 +41,7 @@ function route() {
   const old = document.getElementById('view');
   const view = document.createElement('main');
   view.id = 'view';
-  view.className = r.full ? 'full' : '';
+  view.className = (r.full ? 'full ' : '') + 'view-enter';
   old.replaceWith(view);
   document.querySelectorAll('.sheet-wrap').forEach((s) => s.remove());
   nav.style.display = r.hideNav ? 'none' : '';

@@ -3,6 +3,7 @@ import { icon, avatar, esc, km, duration, AY_KISA } from '../util.js';
 import { activityCard, bindActivityList } from './common.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { applyPalette, paletteBand } from '../features/palette.js';
+import { countUp, observeDraw, frameMarks } from '../features/motion.js';
 
 const FILTERS = [[null, 'Egzersiz', 'pulse'], ['run', 'Koşu', 'shoe'], ['ride', 'Bisiklet', 'bike'], ['walk', 'Yürüyüş', 'walk']];
 
@@ -32,6 +33,7 @@ export function renderYou(root, params, sub) {
         <button class="${tab === 'more' ? 'on' : ''}" data-tab="more">${icon('menu', 30)}<span>Daha Fazla</span></button>
       </nav>
       <div class="tab-body">${tab === 'progress' ? progress() : tab === 'acts' ? acts(mine) : more(mine, s)}</div>`;
+    countUp(root); observeDraw(root);
     if (tab === 'acts') {
       const inp = root.querySelector('.search-in');
       inp.value = q;
@@ -42,10 +44,10 @@ export function renderYou(root, params, sub) {
   const progress = () => {
     const w = weeklyTotals(sport);
     const cur = w[w.length - 1];
-    return `<div class="card progress">
+    return `${rings(weeklyTotals(null, 26))}<div class="card progress">
       <div class="chips scroll">${FILTERS.map(([k, l, ic]) => `<button class="chip ${k === sport ? 'active' : ''}" data-sport="${k ?? ''}">${icon(ic, 18)} ${l}</button>`).join('')}</div>
       <h3>Bu hafta</h3>
-      <div class="stats3 two"><div><span>Süre</span><b>${duration(cur.duration)}</b></div><div><span>Mesafe</span><b>${km(cur.distance, 1)} km</b></div></div>
+      <div class="stats3 two"><div><span>Süre</span><b>${duration(cur.duration)}</b></div><div><span>Mesafe</span><b><i data-count="${cur.distance}" data-fmt="km">0</i> km</b></div></div>
       <small class="muted">Son 12 hafta</small>
       ${chart(w)}
       <button class="btn outline block" data-tab="more">İlerlemeni detaylı gör</button>
@@ -105,11 +107,11 @@ function chart(weeks) {
   const fmt = (s) => `${Math.floor(s / 3600)}sa ${pad2((s % 3600) / 60)}dk`;
   let lastMonth = -1;
   const months = weeks.map((w, i) => { const m = w.start.getMonth(); if (m !== lastMonth && i) { lastMonth = m; return `<text x="${x(i)}" y="${H - 6}" class="ax">${AY_KISA[m]}</text>`; } lastMonth = m; return ''; }).join('');
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}">
+  return `<svg class="chart draw-on-view" viewBox="0 0 ${W} ${H}">
     <defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" style="stop-color:var(--accent)" stop-opacity=".55"/><stop offset="1" style="stop-color:var(--accent)" stop-opacity="0"/></linearGradient></defs>
     ${[0, 0.5, 1].map((k) => `<line x1="8" x2="${8 + innerW}" y1="${y(top * k)}" y2="${y(top * k)}" class="grid"/><text x="${W - padR + 8}" y="${y(top * k) + 4}" class="ax">${fmt(top * k)}</text>`).join('')}
     <path d="${area}" fill="url(#cg)"/>
-    <polyline points="${line}" fill="none" style="stroke:var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+    <polyline points="${line}" fill="none" style="stroke:var(--accent)" stroke-width="2.5" stroke-linejoin="round" pathLength="1" class="chart-line"/>
     ${weeks.map((w, i) => `<circle cx="${x(i)}" cy="${y(w.duration)}" r="${i === weeks.length - 1 ? 6 : 4}" style="fill:${i === weeks.length - 1 ? 'var(--accent)' : '#141519'};stroke:var(--accent)" stroke-width="2"/>`).join('')}
     <line x1="${x(weeks.length - 1)}" x2="${x(weeks.length - 1)}" y1="6" y2="${y(0)}" stroke="#fff" stroke-width="1.5"/>
     ${months}
@@ -154,4 +156,24 @@ function settingsSheet() {
     el.querySelector('[data-theme]').onclick = () => { store.update((s) => (s.mapTheme = s.mapTheme === 'dark' ? 'light' : 'dark')); close(); toast('Harita teması değişti'); };
     el.querySelector('[data-reset]').onclick = () => { if (confirm('Tüm demo verileri sıfırlansın mı?')) { store.reset(); close(); location.hash = '#/home'; location.reload(); } };
   });
+}
+
+// Yıl Halkaları: her hafta ağaç gövdesine bir halka; kalınlık = o haftanın süresi
+function rings(weeks) {
+  const C = 120, n = weeks.length, maxD = Math.max(1800, ...weeks.map((w) => w.duration));
+  let r = 14;
+  const parts = weeks.map((w, i) => {
+    const th = 1 + (w.duration / maxD) * 5.5;
+    r += th / 2 + 1.2;
+    const wob = (k) => (1 + 0.025 * Math.sin(k * 5 + i * 1.3) + 0.018 * Math.sin(k * 9 - i));
+    const pts = Array.from({ length: 73 }, (_, k) => { const a = (k / 72) * Math.PI * 2; return `${(C + Math.cos(a) * r * wob(a)).toFixed(1)},${(C + Math.sin(a) * r * wob(a)).toFixed(1)}`; }).join(' ');
+    const ring = `<polyline points="${pts}" fill="none" class="ring ${w.count ? 'on' : ''}" style="--i:${i}" stroke-width="${th.toFixed(1)}" pathLength="1"><title>${w.start.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} haftası · ${Math.round(w.duration / 60)} dk</title></polyline>`;
+    r += th / 2;
+    return ring;
+  }).join('');
+  const active = weeks.filter((w) => w.count).length;
+  return `<div class="card rings-card framed">${frameMarks('YIL HALKALARI', `${n} HAFTA`)}
+    <svg class="rings draw-on-view" viewBox="0 0 240 240">${parts}<circle cx="${C}" cy="${C}" r="5" class="ring-core"/></svg>
+    <div class="rings-txt"><b data-count="${active}">0</b><span>/${n} hafta hareketli</span><small>Her halka bir hafta. Kalın halka daha uzun süre demek; ara verdiğin haftalar ince kalır, ceza yok.</small></div>
+  </div>`;
 }

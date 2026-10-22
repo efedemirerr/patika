@@ -47,6 +47,7 @@ export function renderMaps(root, params) {
 
   const ctx = createCityMap(root.querySelector('#map'), { theme: store.get().mapTheme });
   const layer = L.layerGroup().addTo(ctx.map);
+  const liveSvg = L.svg({ padding: 0.5 });
   const hl = L.layerGroup().addTo(ctx.map);
   const input = root.querySelector('input');
   const carousel = root.querySelector('.route-carousel');
@@ -83,7 +84,11 @@ export function renderMaps(root, params) {
     if (!list.find((r) => r.id === selected)) selected = list[0]?.id || null;
     layer.clearLayers(); hl.clearLayers();
     list.forEach((r) => {
-      if (r.id === selected) routeLayer(ctx, r.pts, { weight: 5 }).addTo(layer);
+      if (r.id === selected) {
+        routeLayer(ctx, r.pts, { weight: 5 }).addTo(layer);
+        // canlı akış: SVG katmanında hareket eden kesik çizgi
+        L.polyline(ctx.lls(r.pts), { renderer: liveSvg, color: '#ffffff', weight: 3, opacity: 0.9, dashArray: '2 14', lineCap: 'round', className: 'route-flow', interactive: false }).addTo(layer);
+      }
       else routeLayer(ctx, r.pts, { color: '#ff8a3d', weight: 2.5, outline: false }).addTo(layer);
       pinMarker(ctx, r.pts[0], `<span>${icon(SPORTS.run.icon, 18)}</span>`, `pin-marker ${r.id === selected ? 'sel' : ''}`)
         .on('click', () => { selected = r.id; drawRoutes(); scrollTo(r.id); })

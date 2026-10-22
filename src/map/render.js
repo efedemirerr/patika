@@ -96,7 +96,8 @@ function svgBase() {
   return svgBaseCache;
 }
 
-export function miniMapSVG(pts, { aspect = 2, color = 'var(--accent)' } = {}) {
+let miniId = 0;
+export function miniMapSVG(pts, { aspect = 2, color = 'var(--accent)', live = true } = {}) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const [x, y] of pts) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
   let w = maxX - minX, h = maxY - minY;
@@ -104,14 +105,19 @@ export function miniMapSVG(pts, { aspect = 2, color = 'var(--accent)' } = {}) {
   w += pad * 2; h += pad * 2;
   if (w / h < aspect) { const nw = h * aspect; minX -= (nw - w) / 2 - pad; w = nw; } else { const nh = w / aspect; minY -= (nh - h) / 2 - pad; h = nh; }
   minX -= pad; minY -= pad;
-  // SVG'de y aşağı: çevirmek için grup dönüşümü
   const vbY = SIZE - (minY + h);
   const start = pts[0], end = pts[pts.length - 1];
-  return `<svg class="mini-map" viewBox="${minX.toFixed(1)} ${vbY.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  const id = `rt${++miniId}`;
+  const step = Math.max(1, Math.floor(pts.length / 300));
+  const d = path(pts.filter((_, i) => i % step === 0 || i === pts.length - 1));
+  const dur = Math.min(14, Math.max(6, pts.length / 60)).toFixed(1);
+  return `<svg class="mini-map ${live ? 'draw-on-view' : ''}" viewBox="${minX.toFixed(1)} ${vbY.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <g transform="matrix(1 0 0 -1 0 ${SIZE})">${svgBase()}
-      <path d="${path(pts)}" fill="none" stroke="#0b0c10" stroke-width="7" opacity=".55" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-      <path d="${path(pts)}" fill="none" style="stroke:${color}" stroke-width="3.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      <path d="${d}" fill="none" stroke="#0b0c10" stroke-width="7" opacity=".55" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      <path d="${d}" fill="none" style="stroke:${color}" stroke-width="7" opacity=".18" stroke-linejoin="round" vector-effect="non-scaling-stroke" class="rt-glow"/>
+      <path id="${id}" d="${d}" pathLength="1" fill="none" style="stroke:${color}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" class="rt-line"/>
       <circle cx="${start[0]}" cy="${start[1]}" r="${w / 70}" fill="#2bd46f" stroke="#fff" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
       <circle cx="${end[0]}" cy="${end[1]}" r="${w / 70}" fill="#ff4d5e" stroke="#fff" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+      ${live ? `<g class="rt-runner"><circle r="${w / 38}" style="fill:${color}" opacity=".35"><animate attributeName="r" values="${w / 60};${w / 26};${w / 60}" dur="1.6s" repeatCount="indefinite"/></circle><circle r="${w / 90}" fill="#fff"/><animateMotion dur="${dur}s" repeatCount="indefinite" rotate="auto"><mpath href="#${id}"/></animateMotion></g>` : ''}
     </g></svg>`;
 }

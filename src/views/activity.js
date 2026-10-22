@@ -7,6 +7,8 @@ import { splitTimes, sealSVG } from '../features/seal.js';
 import { sealSheet, postcardSheet } from '../features/postcard.js';
 import { openFilm } from '../features/film.js';
 import { silhouetteSVG } from '../features/character.js';
+import { countUp, frameMarks } from '../features/motion.js';
+import { coordLabel } from './common.js';
 
 export function renderActivity(root, params, id) {
   const a = store.activity(id);
@@ -19,7 +21,7 @@ export function renderActivity(root, params, id) {
   const draw = () => {
     const ps = primaryStat(a);
     root.innerHTML = `
-      <div class="detail-map"><div id="map" class="map-fill"></div>
+      <div class="detail-map framed"><div id="map" class="map-fill"></div>${frameMarks(SPORTS[a.type].label.toLocaleUpperCase('tr'), coordLabel(pts[0]))}
         <button class="fab back" data-back>${icon('chevLeft', 26)}</button>
         <button class="film-cta" data-film>${icon('play', 18)} Koşu Filmi</button></div>
       <div class="detail">
@@ -27,11 +29,11 @@ export function renderActivity(root, params, id) {
         <h1>${esc(a.title)}</h1>
         ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
         <div class="grid-stats">
-          <div><span>Mesafe</span><b>${km(a.distance)} km</b></div>
+          <div><span>Mesafe</span><b><i data-count="${a.distance}" data-fmt="km">0</i> km</b></div>
           <div><span>${ps.label}</span><b>${ps.value}</b></div>
           <div><span>Süre</span><b>${duration(a.duration)}</b></div>
-          <div><span>Tırmanış</span><b>${a.gain} m</b></div>
-          <div><span>Kalori</span><b>${Math.round((a.distance / 1000) * (a.type === 'ride' ? 28 : 62))}</b></div>
+          <div><span>Tırmanış</span><b><i data-count="${a.gain}">0</i> m</b></div>
+          <div><span>Kalori</span><b data-count="${Math.round((a.distance / 1000) * (a.type === 'ride' ? 28 : 62))}">0</b></div>
           <div><span>Beğeni</span><b>${a.kudos}</b></div>
         </div>
         <button class="seal-row" data-seal>
@@ -56,6 +58,7 @@ export function renderActivity(root, params, id) {
     dotMarker(ctx, pts[0], 'dot-start').addTo(ctx.map);
     dotMarker(ctx, pts[pts.length - 1], 'dot-end').addTo(ctx.map);
     fitPts(ctx, pts, 40);
+    countUp(root.querySelector('.grid-stats'));
     cleanup = () => ctx.map.remove();
   };
 

@@ -2,6 +2,7 @@ import { store } from '../store.js';
 import { miniMapSVG } from '../map/render.js';
 import { icon, avatar, esc, km, pace, speed, duration, longDate, SPORTS } from '../util.js';
 import { sheet, closeBtn, toast } from '../ui.js';
+import { frameMarks } from '../features/motion.js';
 
 export function primaryStat(a) {
   return a.type === 'ride'
@@ -9,11 +10,18 @@ export function primaryStat(a) {
     : { label: 'Tempo', value: `${pace(a.duration, a.distance)} /km` };
 }
 
-export function activityCard(a) {
+export function coordLabel([x, y]) {
+  // Kurgusal şehrin harita birimlerinden temsili koordinat etiketi
+  const lat = 38.38 + y / 25000, lon = 27.05 + x / 20000;
+  const dms = (v, a, b) => `${Math.floor(v)}°${String(Math.round((v % 1) * 60)).padStart(2, '0')}′${v >= 0 ? a : b}`;
+  return `${dms(lat, 'K', 'G')} · ${dms(lon, 'D', 'B')}`;
+}
+
+export function activityCard(a, i = 0) {
   const u = store.user(a.userId);
   const ps = primaryStat(a);
   return `
-  <article class="card act-card" data-act="${a.id}">
+  <article class="card act-card rise" style="--d:${Math.min(i, 6) * 70}ms" data-act="${a.id}">
     <header class="act-head" data-open="${a.id}">
       ${avatar(u)}
       <div>
@@ -28,7 +36,7 @@ export function activityCard(a) {
       <div><span>Süre</span><b>${duration(a.duration)}</b></div>
     </div>
     ${a.private ? `<p class="note">${icon('users', 18)} Bu aktivite yalnızca takipçilerine görünür.</p>` : ''}
-    <div class="act-map" data-open="${a.id}">${miniMapSVG(store.activityPts(a))}</div>
+    <div class="act-map framed" data-open="${a.id}">${miniMapSVG(store.activityPts(a))}${frameMarks(SPORTS[a.type].label.toLocaleUpperCase('tr'), coordLabel(store.activityPts(a)[0]))}</div>
     ${a.kudos || a.comments.length ? `<div class="act-social">${a.kudos ? `${a.kudos} beğeni` : ''}${a.kudos && a.comments.length ? ' · ' : ''}${a.comments.length ? `${a.comments.length} yorum` : ''}</div>` : ''}
     <footer class="act-actions">
       <button class="icon-btn ${a.liked ? 'liked' : ''}" data-like="${a.id}" aria-label="Beğen">${icon('like', 26)}</button>

@@ -55,7 +55,10 @@ export function createCityMap(el, opts = {}) {
   return { map, renderer, ll, lls };
 }
 
-export function routeLayer(ctx, pts, { color = '#c6f432', weight = 4, outline = true } = {}) {
+export const accentColor = () => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c6f432';
+
+export function routeLayer(ctx, pts, { color = null, weight = 4, outline = true } = {}) {
+  color = color || accentColor();
   const g = L.layerGroup();
   if (outline) L.polyline(ctx.lls(pts), { renderer: ctx.renderer, color: '#0b0c10', weight: weight + 3, opacity: 0.6 }).addTo(g);
   L.polyline(ctx.lls(pts), { renderer: ctx.renderer, color, weight }).addTo(g);
@@ -93,7 +96,7 @@ function svgBase() {
   return svgBaseCache;
 }
 
-export function miniMapSVG(pts, { aspect = 2, color = '#c6f432' } = {}) {
+export function miniMapSVG(pts, { aspect = 2, color = 'var(--accent)' } = {}) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const [x, y] of pts) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
   let w = maxX - minX, h = maxY - minY;
@@ -107,7 +110,7 @@ export function miniMapSVG(pts, { aspect = 2, color = '#c6f432' } = {}) {
   return `<svg class="mini-map" viewBox="${minX.toFixed(1)} ${vbY.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <g transform="matrix(1 0 0 -1 0 ${SIZE})">${svgBase()}
       <path d="${path(pts)}" fill="none" stroke="#0b0c10" stroke-width="7" opacity=".55" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-      <path d="${path(pts)}" fill="none" stroke="${color}" stroke-width="3.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      <path d="${path(pts)}" fill="none" style="stroke:${color}" stroke-width="3.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
       <circle cx="${start[0]}" cy="${start[1]}" r="${w / 70}" fill="#2bd46f" stroke="#fff" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
       <circle cx="${end[0]}" cy="${end[1]}" r="${w / 70}" fill="#ff4d5e" stroke="#fff" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
     </g></svg>`;

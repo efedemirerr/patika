@@ -2,6 +2,7 @@ import { store, weeklyTotals, CHALLENGES } from '../store.js';
 import { icon, avatar, esc, km, duration, AY_KISA } from '../util.js';
 import { activityCard, bindActivityList } from './common.js';
 import { sheet, closeBtn, toast } from '../ui.js';
+import { applyPalette, paletteBand } from '../features/palette.js';
 
 const FILTERS = [[null, 'Egzersiz', 'pulse'], ['run', 'Koşu', 'shoe'], ['ride', 'Bisiklet', 'bike'], ['walk', 'Yürüyüş', 'walk']];
 
@@ -85,7 +86,7 @@ export function renderYou(root, params, sub) {
     else if (t.dataset.go) location.hash = t.dataset.go;
     else if (t.dataset.stats !== undefined) statsSheet();
     else if (t.dataset.edit !== undefined) editSheet(draw);
-    else if (t.dataset.share !== undefined) { navigator.clipboard?.writeText('https://patika.example/sporcu/arda-yel').catch(() => {}); toast('Profil bağlantısı kopyalandı'); }
+    else if (t.dataset.share !== undefined) { navigator.clipboard?.writeText(location.href.split('#')[0] + '#/you').catch(() => {}); toast('Profil bağlantısı kopyalandı'); }
     else if (t.dataset.settings !== undefined) settingsSheet();
     else if (t.dataset.add !== undefined) import('./manual.js').then((m) => m.manualActivitySheet(draw));
   });
@@ -105,11 +106,11 @@ function chart(weeks) {
   let lastMonth = -1;
   const months = weeks.map((w, i) => { const m = w.start.getMonth(); if (m !== lastMonth && i) { lastMonth = m; return `<text x="${x(i)}" y="${H - 6}" class="ax">${AY_KISA[m]}</text>`; } lastMonth = m; return ''; }).join('');
   return `<svg class="chart" viewBox="0 0 ${W} ${H}">
-    <defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c6f432" stop-opacity=".55"/><stop offset="1" stop-color="#c6f432" stop-opacity="0"/></linearGradient></defs>
+    <defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" style="stop-color:var(--accent)" stop-opacity=".55"/><stop offset="1" style="stop-color:var(--accent)" stop-opacity="0"/></linearGradient></defs>
     ${[0, 0.5, 1].map((k) => `<line x1="8" x2="${8 + innerW}" y1="${y(top * k)}" y2="${y(top * k)}" class="grid"/><text x="${W - padR + 8}" y="${y(top * k) + 4}" class="ax">${fmt(top * k)}</text>`).join('')}
     <path d="${area}" fill="url(#cg)"/>
-    <polyline points="${line}" fill="none" stroke="#c6f432" stroke-width="2.5" stroke-linejoin="round"/>
-    ${weeks.map((w, i) => `<circle cx="${x(i)}" cy="${y(w.duration)}" r="${i === weeks.length - 1 ? 6 : 4}" fill="${i === weeks.length - 1 ? '#c6f432' : '#141519'}" stroke="#c6f432" stroke-width="2"/>`).join('')}
+    <polyline points="${line}" fill="none" style="stroke:var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+    ${weeks.map((w, i) => `<circle cx="${x(i)}" cy="${y(w.duration)}" r="${i === weeks.length - 1 ? 6 : 4}" style="fill:${i === weeks.length - 1 ? 'var(--accent)' : '#141519'};stroke:var(--accent)" stroke-width="2"/>`).join('')}
     <line x1="${x(weeks.length - 1)}" x2="${x(weeks.length - 1)}" y1="6" y2="${y(0)}" stroke="#fff" stroke-width="1.5"/>
     ${months}
   </svg>`;
@@ -145,9 +146,11 @@ function settingsSheet() {
   sheet(`${closeBtn()}<h2>Ayarlar</h2>
     <ul class="menu">
       <li data-theme>${icon('layers', 26)}<div><b>Harita teması</b><small>${store.get().mapTheme === 'dark' ? 'Koyu' : 'Açık'}</small></div></li>
+      <li data-palette>${icon('flame', 26)}<div><b>Hava Paleti</b><small>${store.get().palette !== false ? 'Açık · renkler güneşe göre değişir' : 'Kapalı · sabit renkler'}</small>${paletteBand()}</div></li>
       <li data-reset>${icon('trash', 26)}<div><b>Demo verilerini sıfırla</b><small>Tüm yerel kayıtlar silinir</small></div></li>
-      <li>${icon('stats', 26)}<div><b>Hakkında</b><small>Patika taslak sürüm 0.1 · tamamen çevrimdışı, sunucusuz</small></div></li>
+      <li>${icon('stats', 26)}<div><b>Hakkında</b><small>MoveCircle taslak sürüm 0.2 · tamamen çevrimdışı, sunucusuz</small></div></li>
     </ul>`, (el, close) => {
+    el.querySelector('[data-palette]').onclick = () => { store.update((st) => (st.palette = st.palette === false)); applyPalette(); close(); toast(store.get().palette !== false ? 'Hava Paleti açık' : 'Hava Paleti kapalı'); };
     el.querySelector('[data-theme]').onclick = () => { store.update((s) => (s.mapTheme = s.mapTheme === 'dark' ? 'light' : 'dark')); close(); toast('Harita teması değişti'); };
     el.querySelector('[data-reset]').onclick = () => { if (confirm('Tüm demo verileri sıfırlansın mı?')) { store.reset(); close(); location.hash = '#/home'; location.reload(); } };
   });

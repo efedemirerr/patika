@@ -70,16 +70,16 @@ export function premiumSheet() {
   const feats = ['Rotaları planla, kaydet ve çevrimdışı kullan', 'Arkadaşlarınla özel yarışmalar oluştur', 'Detaylı antrenman günlüğü', 'Yük ve toparlanma takibi', 'Gelişmiş nabız bölgesi analizi'];
   sheet(`${closeBtn()}
     <div class="premium">
-      <div class="premium-badge">PATİKA+</div>
+      <div class="premium-badge">MOVECIRCLE+</div>
       <h1>Her adımından daha fazlasını çıkar</h1>
       <ul>${feats.map((f) => `<li>${icon('check', 22)}<span>${f}</span></li>`).join('')}</ul>
-      <button class="btn primary block" data-buy>${store.get().premium ? 'Patika+ aktif ✓' : '30 gün ücretsiz dene'}</button>
+      <button class="btn primary block" data-buy>${store.get().premium ? 'MoveCircle+ aktif ✓' : '30 gün ücretsiz dene'}</button>
       <p class="fine">Bu bir demo: gerçek ödeme alınmaz, yalnızca yerel olarak açılır.</p>
     </div>`, (el, close) => {
     el.querySelector('[data-buy]').onclick = () => {
       store.update((s) => (s.premium = !s.premium));
       close();
-      toast(store.get().premium ? 'Patika+ deneme sürümü açıldı (demo)' : 'Patika+ kapatıldı');
+      toast(store.get().premium ? 'MoveCircle+ deneme sürümü açıldı (demo)' : 'MoveCircle+ kapatıldı');
       window.dispatchEvent(new Event('hashchange'));
     };
   }, { full: true });

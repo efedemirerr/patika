@@ -4,6 +4,7 @@ import { ROUTES, routeById, walkPath, elevationGain } from '../map/city.js';
 import { createCityMap, routeLayer, dotMarker, fitPts } from '../map/render.js';
 import { icon, km, pace, speed, clock, SPORTS, timeTitle, esc } from '../util.js';
 import { sheet, closeBtn, toast } from '../ui.js';
+import { freezePalette } from '../features/palette.js';
 
 // Simülasyon hızları (m/s): harita kurgusal olduğu için kayıt, seçilen rota üzerinde simüle edilir.
 const SPEEDS = { run: 2.9, ride: 6.5, walk: 1.4 };
@@ -93,6 +94,7 @@ export function renderRecord(root, params) {
   };
 
   const start = () => {
+    freezePalette(true);
     st.status = 'running';
     st.lastTick = performance.now();
     st.timer = setInterval(tick, 250);
@@ -151,12 +153,12 @@ export function renderRecord(root, params) {
         });
         close();
         toast('Aktivite kaydedildi 🎉');
-        location.hash = `#/activity/${a.id}`;
+        location.hash = `#/activity/${a.id}?film=1`;
       };
     });
   }
 
   drawPlan();
   controls();
-  return () => { clearInterval(st.timer); ctx.map.remove(); };
+  return () => { clearInterval(st.timer); freezePalette(false); ctx.map.remove(); };
 }

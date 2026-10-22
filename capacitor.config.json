@@ -1,6 +1,6 @@
 {
   "appId": "com.patika.demo",
-  "appName": "Patika",
+  "appName": "MoveCircle",
   "webDir": "dist",
   "android": { "backgroundColor": "#0c0d10" }
 }

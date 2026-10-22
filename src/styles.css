@@ -98,8 +98,8 @@ textarea.input { resize: vertical; }
 .route-card.sel { border-color: var(--accent); }
 .route-card.empty { padding: 20px; color: var(--muted); }
 .rc-map { width: 120px; height: 140px; flex: none; }
-.rc-body { padding: 14px; display: grid; gap: 5px; align-content: start; font-size: 13.5px; }
-.rc-body b { font-size: 17px; padding-right: 30px; }
+.rc-body { padding: 14px 10px 12px 12px; display: grid; gap: 5px; align-content: start; font-size: 13.5px; min-width: 0; flex: 1; }
+.rc-body > b { font-size: 16px; padding-right: 34px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rc-body span, .rc-body em { display: flex; gap: 6px; align-items: center; color: #d0d1d7; font-style: normal; }
 .rc-body em { color: var(--accent); font-weight: 600; }
 .bm { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: #23252c; display: grid; place-items: center; }
@@ -221,3 +221,98 @@ textarea.input { resize: vertical; }
 .fine { text-align: center; color: var(--muted); font-size: 13px; }
 .toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 30px); transform: translate(-50%, 20px); background: #f3f4f6; color: #111; padding: 10px 18px; border-radius: 999px; font-weight: 600; opacity: 0; transition: .25s; z-index: 3000; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ===== MoveCircle 0.2: yeni özellikler ===== */
+html, body, #app { transition: background-color .8s ease; }
+:root { --paper: #F4EFE6; --ink: #1E2430; --stamp: #D2492A; }
+.small { font-size: 13px; }
+
+/* Rota Mührü */
+.seal { display: block; width: 100%; height: auto; }
+.seal-wrap { border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px #0006; max-width: 340px; margin: 0 auto; }
+.seal-cap { text-align: center; font-family: Georgia, 'Times New Roman', serif; font-size: 17px; margin: 14px 0 4px; }
+.seal-anim .seal-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: seal-draw 1.2s ease-out forwards; }
+.seal-anim .seal-ring { opacity: 0; animation: seal-fade .3s ease-out forwards; }
+.seal-anim .seal-body { transform-origin: center; animation: seal-stamp .35s ease-out 1.9s both; }
+@keyframes seal-draw { to { stroke-dashoffset: 0; } }
+@keyframes seal-fade { to { opacity: 1; } }
+@keyframes seal-stamp { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .seal-anim .seal-line, .seal-anim .seal-ring, .seal-anim .seal-body { animation: none; opacity: 1; stroke-dashoffset: 0; } }
+.seal-row { display: flex; align-items: center; gap: 14px; text-align: left; background: var(--card); border-radius: 16px; padding: 10px 14px 10px 10px; width: 100%; }
+.seal-row > span:nth-child(2) { flex: 1; display: grid; gap: 2px; } .seal-row small { color: var(--muted); }
+.seal-thumb { width: 72px; height: 72px; border-radius: 10px; overflow: hidden; flex: none; }
+
+/* Kartpostal */
+.pc-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.pc-preview { border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px #0007; aspect-ratio: 4 / 5; max-height: 56dvh; margin: 0 auto; }
+.pc-preview svg { width: 100%; height: 100%; display: block; }
+.pc-title { display: grid; gap: 6px; color: #c6c7ce; font-size: 14px; margin-top: 14px; }
+
+/* Koşu Filmi */
+.film { position: fixed; inset: 0; z-index: 2500; background: #05060a; opacity: 0; transition: opacity .25s; overflow: hidden; }
+.film.open { opacity: 1; }
+.film-stage { position: absolute; inset: -30% -20% -10%; perspective: 900px; }
+.film-map { position: absolute; inset: 0; transform: rotateX(35deg) scale(1.15); transform-origin: 50% 60%; transition: transform .9s ease; }
+.film.zoomed .film-map { transform: none; }
+.film.zoomed .film-stage { inset: 0; }
+.film-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 55%, transparent 45%, #05060acc 100%); pointer-events: auto; }
+.film-top { position: absolute; top: calc(14px + var(--safe-t)); left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; z-index: 3; }
+.film-top b { display: block; font-size: 17px; } .film-top small { color: #c6c7ce; letter-spacing: 2px; text-transform: uppercase; font-size: 11px; }
+.film-btns { display: flex; gap: 10px; align-items: center; }
+.pill-btn { border: 1.5px solid #ffffff55; border-radius: 999px; padding: 6px 12px; font-weight: 700; }
+.icon-btn.round.dark { width: 40px; height: 40px; border-radius: 50%; background: #121318cc; }
+.film-strip { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 14px 16px calc(18px + var(--safe-b)); background: linear-gradient(transparent, #05060a 40%); }
+.film-stats { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin-bottom: 10px; }
+.film-stats b { display: block; font-size: 26px; font-variant-numeric: tabular-nums; } .film-stats span { font-size: 12px; color: #c6c7ce; }
+.film-scrub { width: 100%; accent-color: var(--accent); }
+.film.paused .film-vignette::after { content: "Duraklatıldı"; position: absolute; top: 46%; left: 50%; transform: translateX(-50%); background: #000a; padding: 8px 16px; border-radius: 999px; font-weight: 700; }
+.film-end { position: absolute; inset: 0; display: none; place-items: center; align-content: center; gap: 18px; z-index: 4; background: #05060aa6; }
+.film.ended .film-end { display: grid; }
+.film-seal { width: 260px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px #000a; }
+.film-end-btns { display: flex; gap: 10px; }
+.film-cta { position: absolute; right: 12px; bottom: 14px; z-index: 600; display: flex; gap: 6px; align-items: center; background: var(--accent); color: #111; font-weight: 800; border-radius: 999px; padding: 10px 16px; box-shadow: 0 6px 20px #0008; }
+
+/* Rota Karakter Kartı */
+.mood-row { align-items: center; }
+.mood-label { flex: none; font-size: 12px; color: #d6d7dc; background: #121318e6; padding: 6px 10px; border-radius: 999px; }
+.chip.sm { padding: 6px 12px; font-size: 13px; }
+.atlas-chip { gap: 6px; }
+.route-card { min-height: 168px; }
+.rc-map { width: 120px; height: auto; min-height: 168px; }
+.traits { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 6px 0 4px; }
+.trait-btn { display: grid; justify-items: center; gap: 2px; padding: 6px 0; border-radius: 10px; }
+.trait-btn:active { background: #ffffff14; }
+.trait-btn small { font-size: 11px; color: #c6c7ce; }
+.trait, .rc-body .trait { display: grid; justify-items: center; gap: 3px; color: #6c6f7a; }
+.trait.lvl1, .rc-body .trait.lvl1 { color: #b9bbc4; } .trait.lvl2, .trait.lvl3, .rc-body .trait.lvl2, .rc-body .trait.lvl3 { color: var(--accent); }
+.trait .bars { display: flex; gap: 2px; } .trait .bars b { width: 6px; height: 3px; border-radius: 2px; background: #3a3c45; }
+.trait.lvl1 .bars b:nth-child(1), .trait.lvl2 .bars b:nth-child(-n+2), .trait.lvl3 .bars b { background: currentColor; }
+.rc-body em { color: var(--muted); font-size: 12.5px; font-style: normal; }
+.trait-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 6px 0 10px; }
+.trait-list > div { display: flex; gap: 10px; align-items: center; background: var(--card2); border-radius: 12px; padding: 10px; }
+.trait-list span { display: grid; } .trait-list small { color: var(--muted); }
+.sil { color: var(--accent); } .silhouette { width: 100%; height: 90px; display: block; }
+
+/* Ayak İzi Atlası */
+.atlas-panel { display: none; position: absolute; left: 12px; right: 12px; bottom: calc(var(--nav-h) + var(--safe-b) + 10px); z-index: 500; background: #121318f2; border-radius: 16px; padding: 14px 16px; box-shadow: 0 6px 20px #0008; }
+.atlas-on .atlas-panel { display: block; }
+.atlas-on .route-carousel, .atlas-on .mood-row, .atlas-on .fab-col { display: none; }
+.atlas-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.atlas-head b { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: 700; }
+.atlas-head span { color: var(--muted); font-size: 12.5px; text-align: right; }
+.atlas-range { position: relative; height: 34px; margin-top: 8px; }
+.atlas-range input { position: absolute; inset: 0; width: 100%; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; accent-color: var(--accent); }
+.atlas-range input::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); border: 3px solid #121318; cursor: pointer; }
+.atlas-range input::-moz-range-thumb { pointer-events: auto; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 3px solid #121318; cursor: pointer; }
+.atlas-range::before { content: ""; position: absolute; left: 0; right: 0; top: 15px; height: 4px; border-radius: 2px; background: #2b2d35; }
+.atlas-ticks { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-bottom: 8px; }
+.atlas-hit { font-size: 14px; border-top: 1px solid #23252c; padding-top: 10px; }
+.atlas-hit b { color: var(--text); }
+.atlas-list { display: grid; gap: 4px; margin-top: 6px; } .atlas-list a { color: var(--accent); font-size: 13px; }
+
+/* Hava Paleti */
+.pal-band { position: relative; height: 12px; border-radius: 6px; margin-top: 8px; }
+.pal-band i { position: absolute; top: -4px; width: 3px; height: 20px; background: #fff; border-radius: 2px; }
+.pal-axis { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-top: 4px; }
+.sbar.best { background: var(--stamp); }
+.menu li .pal-axis { display: flex; } .menu li .pal-band { display: block; }

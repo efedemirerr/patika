@@ -11,7 +11,7 @@ export function renderHome(root) {
     const feed = s.activities.slice(0, 20);
     root.innerHTML = `
     <div class="topbar">
-      <button class="upgrade" data-up>${LOGO}<span>${s.premium ? 'Patika+' : 'Yükselt'}</span></button>
+      <button class="upgrade" data-up>${LOGO}<span>${s.premium ? 'MoveCircle+' : 'Yükselt'}</span></button>
       <div class="top-actions">
         <button class="icon-btn" data-add aria-label="Ekle">${icon('plus', 28)}</button>
         <button class="icon-btn" data-chat aria-label="Mesajlar">${icon('chat', 28)}</button>

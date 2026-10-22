@@ -74,7 +74,7 @@ function events(s) {
         <div class="race-body"><b>${esc(r.title)}</b>
           <small>${icon('pin', 16)} ${esc(r.place)}</small>
           <small>${icon('shoe', 16)} ${r.dist}</small>
-          <small>${icon('users', 16)} ${r.runners.toLocaleString('tr')} Patika sporcusu katılıyor</small>
+          <small>${icon('users', 16)} ${r.runners.toLocaleString('tr')} MoveCircle sporcusu katılıyor</small>
         </div>
       </div>`).join('')}</div>`;
 }

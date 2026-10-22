@@ -7,6 +7,9 @@ import { renderRecord } from './views/record.js';
 import { renderGroups } from './views/groups.js';
 import { renderYou } from './views/you.js';
 import { renderActivity } from './views/activity.js';
+import { startPalette } from './features/palette.js';
+
+startPalette();
 
 const ROUTES = {
   home: { render: renderHome, nav: 'home' },

@@ -103,5 +103,5 @@ export function icon(name, size = 24, extra = '') {
   return `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${P[name] || ''}</svg>`;
 }
 
-// Özgün marka işareti (Patika): kıvrımlı patika + nokta
+// Özgün marka işareti (MoveCircle): kıvrımlı yol + nokta
 export const LOGO = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#c6f432"/><path d="M6 18c3-1 3-5 6-6s5-3 6-6" stroke="#111" stroke-width="2.4" stroke-linecap="round"/><circle cx="6" cy="18" r="1.8" fill="#111"/></svg>`;

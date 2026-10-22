@@ -1,4 +1,4 @@
-# Patika — fitness takip uygulaması taslağı
+# MoveCircle — fitness takip uygulaması taslağı
 
 Tamamen **frontend**, **sunucusuz** ve **çevrimdışı** çalışan bir koşu/bisiklet takip uygulaması taslağı.
 Tüm isimler, mekânlar, kulüpler ve yarışlar kurgusaldır. Harita, kod ile üretilen kurgusal bir şehirdir
@@ -13,9 +13,16 @@ Tüm isimler, mekânlar, kulüpler ve yarışlar kurgusaldır. Harita, kod ile �
 | Gruplar | Meydan okumalar (ilerleme çubuğu), kulüpler, yerel etkinlikler, yarışlar |
 | Sen | Profil, 12 haftalık ilerleme grafiği, aktiviteler (arama), istatistikler, ayarlar (tema, verileri sıfırla) |
 | Aktivite detayı | Büyük harita, istatistikler, irtifa grafiği, km bölümleri, yorumlar, silme |
-| Patika+ | Abonelik ekranı (demo, ödeme yok) |
+| MoveCircle+ | Abonelik ekranı (demo, ödeme yok) |
 
 Veriler `localStorage` içinde tutulur (`src/store.js`).
+
+## 0.2 ile gelenler
+- **Ayak İzi Atlası** — Haritalar → Atlas: tüm aktivitelerin üst üste çizildiği kişisel harita, ay aralığı kaydırıcısı, sokağa dokununca kaç kez geçildiği.
+- **Rota Mührü + Kartpostal** — her aktiviteden deterministik SVG mühür; Gazete / Pafta / Afiş şablonlarıyla PNG paylaşımı.
+- **Koşu Filmi** — eğik açılı, tempoya göre hızlanan 20 sn tekrar; kayıttan sonra otomatik oynar, mühürle biter.
+- **Rota Karakter Kartı** — dönüş / yeşil / su / eğim göstergeleri, ruh hâline göre sıralama, göstergeye dokununca haritada vurgu.
+- **Hava Paleti** — vurgu rengi güneşin konumuna göre değişir (Sen → Ayarlar).
 
 ## Klasör yapısı
 ```
@@ -25,6 +32,7 @@ src/
   map/city.js        # kurgusal şehir geometrisi, rotalar, irtifa
   map/render.js      # Leaflet (CRS.Simple) çizimi + mini SVG harita
   views/*.js         # ekranlar
+  features/*.js      # mühür, kartpostal, film, karakter, palet
 android/             # Capacitor Android projesi
 .github/workflows/   # Web + APK derleme
 ```

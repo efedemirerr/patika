@@ -17,7 +17,7 @@ export function coastY(x) {
   return 290 + 55 * Math.sin(x / 150 + 0.6) + 22 * Math.sin(x / 47) + (x < 260 ? (260 - x) * 0.35 : 0);
 }
 
-const HILL = { x: 790, y: 820, r: 230 };
+export const HILL = { x: 790, y: 820, r: 230 };
 
 export function elevation(x, y) {
   const d = Math.hypot(x - HILL.x, y - HILL.y);

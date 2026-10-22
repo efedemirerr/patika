@@ -1,0 +1,51 @@
+// MoveCircle simge kaynağı: tek yerden tüm SVG varyantlarını üretir.
+// Konsept: açık bir halka (döngü/rota) ve önündeki parlayan koşucu noktası; arka planda ince eş yükselti çizgileri.
+
+const BG = `
+  <defs>
+    <radialGradient id="bg" cx="28%" cy="22%" r="95%">
+      <stop offset="0" stop-color="#252a3a"/>
+      <stop offset=".55" stop-color="#141722"/>
+      <stop offset="1" stop-color="#090a0f"/>
+    </radialGradient>
+  </defs>
+  <rect width="100" height="100" fill="url(#bg)"/>
+  <g fill="none" stroke="#ffffff" stroke-opacity=".07" stroke-width=".7">
+    <path d="M-5 78 C 20 70, 35 88, 60 80 S 95 66, 108 72"/>
+    <path d="M-5 86 C 22 78, 38 96, 62 88 S 96 74, 108 80"/>
+    <path d="M-5 94 C 24 86, 40 104, 64 96 S 97 82, 108 88"/>
+    <path d="M-5 14 C 18 22, 40 6, 62 14 S 92 26, 108 18"/>
+    <path d="M-5 6 C 20 14, 42 -2, 64 6 S 94 18, 108 10"/>
+  </g>`;
+
+// Sembol 100x100 içinde, merkez (50,50)
+const SYMBOL = `
+  <defs>
+    <linearGradient id="ring" x1="20" y1="80" x2="80" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8fe36a"/>
+      <stop offset=".6" stop-color="#c6f432"/>
+      <stop offset="1" stop-color="#e9ff8a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#e9ff8a" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#c6f432" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="50" r="15" fill="none" stroke="#c6f432" stroke-opacity=".28" stroke-width="1.6" stroke-dasharray="2.2 3.2"/>
+  <path d="M 66.07 30.85 A 25 25 0 1 0 74.62 45.66" fill="none" stroke="url(#ring)" stroke-width="9.5" stroke-linecap="round"/>
+  <circle cx="72.9" cy="36.6" r="11" fill="url(#glow)"/>
+  <circle cx="72.9" cy="36.6" r="5.4" fill="#ffffff"/>
+  <circle cx="50" cy="50" r="3.2" fill="#c6f432"/>`;
+
+const wrap = (size, inner, extra = '') => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 100 100" ${extra}>${inner}</svg>`;
+
+/** Kare simge (köşeler yuvarlak) — legacy launcher, web, Apple */
+export const square = (size, radius = 22) => wrap(size, `<clipPath id="c"><rect width="100" height="100" rx="${radius}"/></clipPath><g clip-path="url(#c)">${BG}${SYMBOL}</g>`);
+/** Tam kare, köşesiz (iOS kendi maskesini uygular) */
+export const full = (size) => wrap(size, `${BG}${SYMBOL}`);
+/** Yuvarlak simge */
+export const round = (size) => wrap(size, `<clipPath id="c"><circle cx="50" cy="50" r="50"/></clipPath><g clip-path="url(#c)">${BG}${SYMBOL}</g>`);
+/** Adaptive icon ön katmanı: 108 birimlik tuvalin ortadaki güvenli alanına (66) ölçeklenmiş sembol, şeffaf zemin */
+export const foreground = (size) => wrap(size, `<g transform="translate(50 50) scale(0.66) translate(-50 -50)">${SYMBOL}</g>`);
+/** Adaptive icon arka katmanı */
+export const background = (size) => wrap(size, BG);

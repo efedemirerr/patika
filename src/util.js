@@ -111,4 +111,4 @@ export function icon(name, size = 24, extra = '') {
 }
 
 // Özgün marka işareti (MoveCircle): kıvrımlı yol + nokta
-export const LOGO = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#c6f432"/><path d="M6 18c3-1 3-5 6-6s5-3 6-6" stroke="#111" stroke-width="2.4" stroke-linecap="round"/><circle cx="6" cy="18" r="1.8" fill="#111"/></svg>`;
+export const LOGO = `<svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="24" fill="#141722"/><path d="M 66.07 30.85 A 25 25 0 1 0 74.62 45.66" fill="none" stroke="#c6f432" stroke-width="11" stroke-linecap="round"/><circle cx="72.9" cy="36.6" r="7" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#c6f432"/></svg>`;

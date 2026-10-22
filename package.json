@@ -1,0 +1,25 @@
+{
+  "name": "patika",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cap:sync": "npx cap sync android",
+    "android:debug": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
+    "vite": "^8.3.5"
+  },
+  "private": true,
+  "type": "module"
+}

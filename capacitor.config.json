@@ -1,0 +1,6 @@
+{
+  "appId": "com.patika.demo",
+  "appName": "Patika",
+  "webDir": "dist",
+  "android": { "backgroundColor": "#0c0d10" }
+}

@@ -1,6 +1,7 @@
+import { tr } from '../i18n.js';
 import { store } from '../store.js';
 import { miniMapSVG } from '../map/render.js';
-import { icon, avatar, esc, km, pace, speed, duration, longDate, SPORTS } from '../util.js';
+import { upper, icon, avatar, esc, km, pace, speed, duration, longDate, SPORTS } from '../util.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { frameMarks } from '../features/motion.js';
 
@@ -36,7 +37,7 @@ export function activityCard(a, i = 0) {
       <div><span>Süre</span><b>${duration(a.duration)}</b></div>
     </div>
     ${a.private ? `<p class="note">${icon('users', 18)} Bu aktivite yalnızca takipçilerine görünür.</p>` : ''}
-    <div class="act-map framed" data-open="${a.id}">${miniMapSVG(store.activityPts(a))}${frameMarks(SPORTS[a.type].label.toLocaleUpperCase('tr'), coordLabel(store.activityPts(a)[0]))}</div>
+    <div class="act-map framed" data-open="${a.id}">${miniMapSVG(store.activityPts(a))}${frameMarks(upper(tr(SPORTS[a.type].label)), coordLabel(store.activityPts(a)[0]))}</div>
     ${a.kudos || a.comments.length ? `<div class="act-social">${a.kudos ? `${a.kudos} beğeni` : ''}${a.kudos && a.comments.length ? ' · ' : ''}${a.comments.length ? `${a.comments.length} yorum` : ''}</div>` : ''}
     <footer class="act-actions">
       <button class="icon-btn ${a.liked ? 'liked' : ''}" data-like="${a.id}" aria-label="Beğen">${icon('like', 26)}</button>

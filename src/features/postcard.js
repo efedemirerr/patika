@@ -1,9 +1,10 @@
 // Kartpostal: aktiviteden editoryal, paylaşılabilir poster (4:5). Üç şablon: Gazete, Pafta, Afiş.
 import { store } from '../store.js';
 import { sealSVG, INK } from './seal.js';
-import { km, pace, duration, shortDate, esc, icon } from '../util.js';
+import { km, pace, duration, shortDate, esc, icon, upper } from '../util.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { primaryStat } from '../views/common.js';
+import { tr, isEn } from '../i18n.js';
 
 const W = 1080, H = 1350;
 const SERIF = "Georgia, 'Times New Roman', serif";
@@ -44,21 +45,21 @@ function contours(seed) {
 export function postcardSVG(a, template, title) {
   const pts = store.activityPts(a);
   const ps = primaryStat(a);
-  const stats = [['Mesafe', `${km(a.distance)} km`], [ps.label, ps.value], ['Süre', duration(a.duration)]];
-  const date = shortDate(a.date).toLocaleUpperCase('tr');
-  const lines = wrap(title, template === 'poster' ? 14 : 18);
+  const stats = [[tr('Mesafe'), `${km(a.distance)} km`], [tr(ps.label), ps.value], [tr('Süre'), duration(a.duration)]];
+  const date = upper(shortDate(a.date));
+  const lines = wrap(tr(title), template === 'poster' ? 14 : 18);
 
   if (template === 'gazete') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
       <rect width="${W}" height="${H}" fill="${INK.paper}"/>
-      <text x="80" y="110" font-family="${SANS}" font-size="26" letter-spacing="6" fill="${INK.ink}">MOVECIRCLE · SAHA KAYDI</text>
+      <text x="80" y="110" font-family="${SANS}" font-size="26" letter-spacing="6" fill="${INK.ink}">${isEn ? 'MOVECIRCLE · FIELD LOG' : 'MOVECIRCLE · SAHA KAYDI'}</text>
       <text x="${W - 80}" y="110" text-anchor="end" font-family="${SANS}" font-size="26" letter-spacing="4" fill="${INK.ink}">${esc(date)}</text>
       <line x1="80" x2="${W - 80}" y1="138" y2="138" stroke="${INK.ink}" stroke-width="3"/>
       <line x1="80" x2="${W - 80}" y1="148" y2="148" stroke="${INK.ink}" stroke-width="1"/>
       ${lines.map((l, i) => `<text x="80" y="${250 + i * 96}" font-family="${SERIF}" font-size="92" font-weight="700" fill="${INK.ink}">${esc(l)}</text>`).join('')}
       <path d="${routePath(pts, { x: 80, y: 300 + lines.length * 96, w: W - 160, h: 660 - lines.length * 60 })}" fill="none" stroke="${INK.ink}" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
       <line x1="80" x2="${W - 80}" y1="1130" y2="1130" stroke="${INK.ink}" stroke-width="1"/>
-      ${stats.map(([l, v], i) => `<text x="${80 + i * 320}" y="1190" font-family="${SANS}" font-size="26" letter-spacing="3" fill="${INK.ink}" opacity=".7">${esc(l.toLocaleUpperCase('tr'))}</text><text x="${80 + i * 320}" y="1262" font-family="${SERIF}" font-size="64" fill="${INK.ink}">${esc(v)}</text>`).join('')}
+      ${stats.map(([l, v], i) => `<text x="${80 + i * 320}" y="1190" font-family="${SANS}" font-size="26" letter-spacing="3" fill="${INK.ink}" opacity=".7">${esc(upper(l))}</text><text x="${80 + i * 320}" y="1262" font-family="${SERIF}" font-size="64" fill="${INK.ink}">${esc(v)}</text>`).join('')}
     </svg>`;
   }
 
@@ -72,7 +73,7 @@ export function postcardSVG(a, template, title) {
       <path d="${routePath(pts, { x: 120, y: 120, w: 840, h: 920 })}" fill="none" stroke="${INK.red}" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
       <text x="80" y="1150" font-family="${SERIF}" font-size="56" font-style="italic" fill="${INK.ink}">${esc(lines.join(' '))}</text>
       <text x="80" y="1230" font-family="${MONO}" font-size="30" fill="${INK.ink}">${esc(stats.map(([, v]) => v).join('  ·  '))}</text>
-      <text x="80" y="1290" font-family="${MONO}" font-size="24" fill="${INK.ink}" opacity=".6">PAFTA ${esc(a.id.slice(-4).toUpperCase())} · ${esc(date)} · LİMAN ŞEHRİ</text>
+      <text x="80" y="1290" font-family="${MONO}" font-size="24" fill="${INK.ink}" opacity=".6">${isEn ? 'SHEET' : 'PAFTA'} ${esc(a.id.slice(-4).toUpperCase())} · ${esc(date)} · ${isEn ? 'LIMAN CITY' : 'LİMAN ŞEHRİ'}</text>
       <g transform="translate(940 1190)"><path d="M0 -40 L12 0 L0 -8 L-12 0Z" fill="${INK.ink}"/><text y="30" text-anchor="middle" font-family="${SANS}" font-size="24" fill="${INK.ink}">K</text></g>
     </svg>`;
   }
@@ -106,7 +107,7 @@ const TEMPLATES = [['gazete', 'Gazete'], ['pafta', 'Pafta'], ['poster', 'Afiş']
 
 export function postcardSheet(a) {
   let tpl = 'gazete';
-  let title = a.title;
+  let title = tr(a.title);
   sheet(`${closeBtn()}<h2>Kartpostal</h2>
     <div class="pc-tabs">${TEMPLATES.map(([k, l]) => `<button class="chip ${k === tpl ? 'active' : ''}" data-tpl="${k}">${l}</button>`).join('')}</div>
     <div class="pc-preview"></div>

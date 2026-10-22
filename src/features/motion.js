@@ -1,3 +1,4 @@
+import { isEn, LOCALE } from '../i18n.js';
 // Hareket katmanı: canlı topoğrafya, sayan rakamlar, görünürken kendini çizen rotalar.
 // Hepsi "azaltılmış hareket" tercihine uyar.
 
@@ -10,7 +11,7 @@ export function countUp(root) {
     const target = Number(el.dataset.count);
     const fmt = el.dataset.fmt || 'int';
     const suffix = el.dataset.suffix || '';
-    const out = (v) => (fmt === 'km' ? (v / 1000).toFixed(2).replace('.', ',') : fmt === 'dec1' ? v.toFixed(1).replace('.', ',') : Math.round(v).toLocaleString('tr-TR')) + suffix;
+    const out = (v) => (fmt === 'km' ? (v / 1000).toFixed(2).replace('.', isEn ? '.' : ',') : fmt === 'dec1' ? v.toFixed(1).replace('.', isEn ? '.' : ',') : Math.round(v).toLocaleString(LOCALE)) + suffix;
     if (reducedMotion() || !isFinite(target)) { el.textContent = out(target); return; }
     const dur = 900, t0 = performance.now();
     const step = (now) => {
@@ -132,5 +133,5 @@ export function frameMarks(label = '', coord = '') {
 /** Bugünün selamı */
 export function greeting(d = new Date()) {
   const h = d.getHours();
-  return h < 5 ? 'İyi geceler' : h < 12 ? 'Günaydın' : h < 18 ? 'İyi günler' : h < 22 ? 'İyi akşamlar' : 'İyi geceler';
+  return h < 5 ? 'İyi geceler' : h < 12 ? 'Günaydın' : h < 18 ? 'İyi günler' : h < 22 ? 'İyi akşamlar' : 'İyi geceler'; // ekranda i18n ile çevrilir
 }

@@ -10,8 +10,10 @@ import { renderGroups } from './views/groups.js';
 import { renderYou } from './views/you.js';
 import { renderActivity } from './views/activity.js';
 import { startPalette } from './features/palette.js';
+import { startI18n } from './i18n.js';
 
 startPalette();
+startI18n();
 
 const ROUTES = {
   home: { render: renderHome, nav: 'home' },

@@ -24,6 +24,11 @@ Veriler `localStorage` içinde tutulur (`src/store.js`).
 - **Rota Karakter Kartı** — dönüş / yeşil / su / eğim göstergeleri, ruh hâline göre sıralama, göstergeye dokununca haritada vurgu.
 - **Hava Paleti** — vurgu rengi güneşin konumuna göre değişir (Sen → Ayarlar).
 
+## Dil desteği
+Türkçe ve İngilizce. İlk açılışta cihaz diline göre seçilir; **Sen → Ayarlar → Dil · Language** ile değiştirilir.
+Arayüz metinleri Türkçe yazılır, `src/i18n.js` içindeki sözlük İngilizceye çevirir; tarih, süre ve ondalık biçimleri `src/util.js` dile göre üretir.
+Yeni bir metin eklerken İngilizce karşılığını `EN` sözlüğüne (ya da kalıplı metinler için `RULES` listesine) eklemek yeterli.
+
 ## Klasör yapısı
 ```
 src/

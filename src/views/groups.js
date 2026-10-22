@@ -1,5 +1,6 @@
 import { store, CLUBS, CHALLENGES, EVENTS, RACES, challengeProgress } from '../store.js';
 import { icon, esc, AY_KISA, GUN_KISA, SPORTS, shortDate } from '../util.js';
+import { LOCALE } from '../i18n.js';
 import { toast } from '../ui.js';
 
 const TABS = [['challenges', 'Meydan Okumalar'], ['clubs', 'Kulüpler'], ['events', 'Etkinlikler']];
@@ -74,7 +75,7 @@ function events(s) {
         <div class="race-body"><b>${esc(r.title)}</b>
           <small>${icon('pin', 16)} ${esc(r.place)}</small>
           <small>${icon('shoe', 16)} ${r.dist}</small>
-          <small>${icon('users', 16)} ${r.runners.toLocaleString('tr')} MoveCircle sporcusu katılıyor</small>
+          <small>${icon('users', 16)} ${r.runners.toLocaleString(LOCALE)} MoveCircle sporcusu katılıyor</small>
         </div>
       </div>`).join('')}</div>`;
 }

@@ -1,9 +1,10 @@
 import { icon } from './util.js';
+import { tr } from './i18n.js';
 
 export function toast(msg) {
   const t = document.createElement('div');
   t.className = 'toast';
-  t.textContent = msg;
+  t.textContent = tr(msg);
   document.body.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2200);

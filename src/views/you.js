@@ -1,5 +1,6 @@
 import { store, weeklyTotals, CHALLENGES } from '../store.js';
 import { icon, avatar, esc, km, duration, AY_KISA } from '../util.js';
+import { LOCALE, LANG, setLang } from '../i18n.js';
 import { activityCard, bindActivityList } from './common.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { applyPalette, paletteBand } from '../features/palette.js';
@@ -149,9 +150,11 @@ function settingsSheet() {
     <ul class="menu">
       <li data-theme>${icon('layers', 26)}<div><b>Harita teması</b><small>${store.get().mapTheme === 'dark' ? 'Koyu' : 'Açık'}</small></div></li>
       <li data-palette>${icon('flame', 26)}<div><b>Hava Paleti</b><small>${store.get().palette !== false ? 'Açık · renkler güneşe göre değişir' : 'Kapalı · sabit renkler'}</small>${paletteBand()}</div></li>
+      <li data-lang>${icon('chat', 26)}<div><b>Dil · Language</b><small>${LANG === 'en' ? 'English' : 'Türkçe'}</small><span class="lang-seg"><button class="${LANG === 'tr' ? 'on' : ''}" data-l="tr">Türkçe</button><button class="${LANG === 'en' ? 'on' : ''}" data-l="en">English</button></span></div></li>
       <li data-reset>${icon('trash', 26)}<div><b>Demo verilerini sıfırla</b><small>Tüm yerel kayıtlar silinir</small></div></li>
-      <li>${icon('stats', 26)}<div><b>Hakkında</b><small>MoveCircle taslak sürüm 0.2 · tamamen çevrimdışı, sunucusuz</small></div></li>
+      <li>${icon('stats', 26)}<div><b>Hakkında</b><small>MoveCircle taslak sürüm 0.3 · tamamen çevrimdışı, sunucusuz</small></div></li>
     </ul>`, (el, close) => {
+    el.querySelectorAll('[data-l]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); if (b.dataset.l !== LANG) setLang(b.dataset.l); }));
     el.querySelector('[data-palette]').onclick = () => { store.update((st) => (st.palette = st.palette === false)); applyPalette(); close(); toast(store.get().palette !== false ? 'Hava Paleti açık' : 'Hava Paleti kapalı'); };
     el.querySelector('[data-theme]').onclick = () => { store.update((s) => (s.mapTheme = s.mapTheme === 'dark' ? 'light' : 'dark')); close(); toast('Harita teması değişti'); };
     el.querySelector('[data-reset]').onclick = () => { if (confirm('Tüm demo verileri sıfırlansın mı?')) { store.reset(); close(); location.hash = '#/home'; location.reload(); } };
@@ -167,7 +170,7 @@ function rings(weeks) {
     r += th / 2 + 1.2;
     const wob = (k) => (1 + 0.025 * Math.sin(k * 5 + i * 1.3) + 0.018 * Math.sin(k * 9 - i));
     const pts = Array.from({ length: 73 }, (_, k) => { const a = (k / 72) * Math.PI * 2; return `${(C + Math.cos(a) * r * wob(a)).toFixed(1)},${(C + Math.sin(a) * r * wob(a)).toFixed(1)}`; }).join(' ');
-    const ring = `<polyline points="${pts}" fill="none" class="ring ${w.count ? 'on' : ''}" style="--i:${i}" stroke-width="${th.toFixed(1)}" pathLength="1"><title>${w.start.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} haftası · ${Math.round(w.duration / 60)} dk</title></polyline>`;
+    const ring = `<polyline points="${pts}" fill="none" class="ring ${w.count ? 'on' : ''}" style="--i:${i}" stroke-width="${th.toFixed(1)}" pathLength="1"><title>${w.start.toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' })} haftası · ${Math.round(w.duration / 60)} dk</title></polyline>`;
     r += th / 2;
     return ring;
   }).join('');

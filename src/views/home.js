@@ -1,7 +1,8 @@
 import { store, streakWeeks, NOTIFS, weeklyTotals, weekStart } from '../store.js';
 import { liveTopo, countUp, observeDraw, greeting, frameMarks } from '../features/motion.js';
 import { accentColor } from '../map/render.js';
-import { icon, avatar, esc, LOGO } from '../util.js';
+import { icon, avatar, esc, LOGO, upper } from '../util.js';
+import { LOCALE } from '../i18n.js';
 import { activityCard, bindActivityList, premiumSheet } from './common.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { manualActivitySheet } from './manual.js';
@@ -37,7 +38,7 @@ export function renderHome(root) {
 
     <section class="hero framed">
       <canvas class="hero-topo"></canvas>
-      ${frameMarks('SAHA KAYDI', new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }).toLocaleUpperCase('tr'))}
+      ${frameMarks('SAHA KAYDI', upper(new Date().toLocaleDateString(LOCALE, { day: 'numeric', month: 'long' })))}
       <div class="hero-in">
         <p class="hero-hi">${greeting()}, ${esc(s.me.name.split(' ')[0])}</p>
         <h1 class="hero-title">Bu hafta <em data-count="${week.distance}" data-fmt="km">0</em> km</h1>

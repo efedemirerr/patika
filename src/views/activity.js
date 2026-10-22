@@ -1,6 +1,7 @@
 import { store } from '../store.js';
 import { createCityMap, routeLayer, dotMarker, fitPts } from '../map/render.js';
-import { icon, avatar, esc, km, pace, duration, longDate, SPORTS } from '../util.js';
+import { icon, avatar, esc, km, pace, duration, longDate, SPORTS, upper } from '../util.js';
+import { tr } from '../i18n.js';
 import { primaryStat, shareSheet } from './common.js';
 import { toast } from '../ui.js';
 import { splitTimes, sealSVG } from '../features/seal.js';
@@ -21,7 +22,7 @@ export function renderActivity(root, params, id) {
   const draw = () => {
     const ps = primaryStat(a);
     root.innerHTML = `
-      <div class="detail-map framed"><div id="map" class="map-fill"></div>${frameMarks(SPORTS[a.type].label.toLocaleUpperCase('tr'), coordLabel(pts[0]))}
+      <div class="detail-map framed"><div id="map" class="map-fill"></div>${frameMarks(upper(tr(SPORTS[a.type].label)), coordLabel(pts[0]))}
         <button class="fab back" data-back>${icon('chevLeft', 26)}</button>
         <button class="film-cta" data-film>${icon('play', 18)} Koşu Filmi</button></div>
       <div class="detail">

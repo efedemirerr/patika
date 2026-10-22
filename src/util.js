@@ -1,8 +1,14 @@
-const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-export const AY_KISA = ['OCA', 'ŞUB', 'MAR', 'NİS', 'MAY', 'HAZ', 'TEM', 'AĞU', 'EYL', 'EKİ', 'KAS', 'ARA'];
-export const GUN_KISA = ['PAZ', 'PZT', 'SAL', 'ÇAR', 'PER', 'CUM', 'CMT'];
+import { isEn, tr } from './i18n.js';
 
-export const km = (m, d = 2) => (m / 1000).toFixed(d).replace('.', ',');
+const AYLAR = isEn ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  : ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+export const AY_KISA = isEn ? ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+  : ['OCA', 'ŞUB', 'MAR', 'NİS', 'MAY', 'HAZ', 'TEM', 'AĞU', 'EYL', 'EKİ', 'KAS', 'ARA'];
+export const GUN_KISA = isEn ? ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] : ['PAZ', 'PZT', 'SAL', 'ÇAR', 'PER', 'CUM', 'CMT'];
+const DEC = isEn ? '.' : ',';
+export const upper = (s) => String(s).toLocaleUpperCase(isEn ? 'en-US' : 'tr-TR');
+
+export const km = (m, d = 2) => (m / 1000).toFixed(d).replace('.', DEC);
 export const pad = (n) => String(n).padStart(2, '0');
 
 export function pace(sec, meters) {
@@ -12,15 +18,15 @@ export function pace(sec, meters) {
 }
 
 export function speed(sec, meters) {
-  if (!sec) return '0,0';
-  return ((meters / sec) * 3.6).toFixed(1).replace('.', ',');
+  if (!sec) return `0${DEC}0`;
+  return ((meters / sec) * 3.6).toFixed(1).replace('.', DEC);
 }
 
 export function duration(sec) {
   sec = Math.round(sec);
   const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-  if (h) return `${h}sa ${m}dk`;
-  return `${m}dk ${s}sn`;
+  if (h) return isEn ? `${h}h ${m}m` : `${h}sa ${m}dk`;
+  return isEn ? `${m}m ${s}s` : `${m}dk ${s}sn`;
 }
 
 export function clock(sec) {
@@ -31,18 +37,19 @@ export function clock(sec) {
 
 export function longDate(iso) {
   const d = new Date(iso);
-  return `${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()} tarihinde saat ${pad(d.getHours())}:${pad(d.getMinutes())} itibarıyla`;
+  return isEn ? `${AYLAR[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} at ${pad(d.getHours())}:${pad(d.getMinutes())}`
+    : `${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()} tarihinde saat ${pad(d.getHours())}:${pad(d.getMinutes())} itibarıyla`;
 }
 
 export function shortDate(iso) {
   const d = new Date(iso);
-  return `${d.getDate()} ${AYLAR[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`;
+  return isEn ? `${AYLAR[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()}` : `${d.getDate()} ${AYLAR[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`;
 }
 
 export function timeTitle(type, date = new Date()) {
   const h = date.getHours();
   const part = h < 5 ? 'Gece' : h < 12 ? 'Sabah' : h < 17 ? 'Öğleden Sonra' : h < 21 ? 'Akşam' : 'Gece';
-  return `${part} ${SPORTS[type].noun}`;
+  return tr(`${part} ${SPORTS[type].noun}`);
 }
 
 export const SPORTS = {

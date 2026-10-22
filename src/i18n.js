@@ -116,11 +116,16 @@ const EN = {
   'İmzamı paylaş': 'Share my signature', 'İmza hazır': 'Signature ready',
   'Kuzey': 'North', 'Kuzeydoğu': 'Northeast', 'Doğu': 'East', 'Güneydoğu': 'Southeast', 'Güney': 'South', 'Güneybatı': 'Southwest', 'Batı': 'West', 'Kuzeybatı': 'Northwest',
   // Hava paleti ön ayarları
+  'Akşam': 'Evening', 'Öğleden Sonra': 'Afternoon',
   'Gece': 'Night', 'Şafak': 'Dawn', 'Sabah': 'Morning', 'Öğle': 'Noon', 'İkindi': 'Afternoon', 'Gün batımı': 'Sunset',
 };
 
 // ---- Kalıplı metinler ----
 const RULES = [
+  [/^%(\d+)$/, '$1%'],
+  [/^Bu sokaktan 1 kez geçtin$/, "You've passed this street once"],
+  [/^(.+) · (\d+:\d\d) \/km$/, (m, t, p) => `${tr(t)} · ${p} /km`],
+  [/^(.+) · ([A-Z][a-z]{2} \d{1,2}, \d{4})$/, (m, t, d) => `${tr(t)} · ${d}`],
   [/^Gölgenin (\d+) sn önündesin$/, "You're $1 s ahead of your ghost"], [/^Gölgenin (\d+) sn gerisindesin$/, "You're $1 s behind your ghost"],
   [/^(\d+) AKTİVİTE$/, '$1 ACTIVITIES'], [/^(.+) tarihinde bıraktın$/, 'You left this on $1'],
   [/^(Sabah|Öğleden Sonra|Akşam|Gece) · (\d\d–\d\d)$/, (m, a, b) => `${EN[a]} · ${b}`],

@@ -1,10 +1,11 @@
 import { store, weeklyTotals, CHALLENGES } from '../store.js';
-import { icon, avatar, esc, km, duration, AY_KISA } from '../util.js';
+import { icon, avatar, esc, km, duration, pace, AY_KISA } from '../util.js';
 import { LOCALE, LANG, setLang } from '../i18n.js';
 import { activityCard, bindActivityList } from './common.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { applyPalette, paletteBand } from '../features/palette.js';
 import { countUp, observeDraw, frameMarks } from '../features/motion.js';
+import { isPlus, plusTag, premiumSheet, PLANS, money } from '../features/plus.js';
 import { signatureData, signatureSVG, shareSignature } from '../features/signature.js';
 
 const FILTERS = [[null, 'Egzersiz', 'pulse'], ['run', 'Koşu', 'shoe'], ['ride', 'Bisiklet', 'bike'], ['walk', 'Yürüyüş', 'walk']];
@@ -23,9 +24,9 @@ export function renderYou(root, params, sub) {
         <button class="icon-btn" data-soon="Sporcu arama">${icon('search', 28)}</button>
         <button class="icon-btn" data-settings>${icon('gear', 28)}</button>
       </div></div>
-      <section class="profile">
+      <section class="profile ${s.premium ? 'is-plus' : ''}">
         ${avatar(s.me, 96)}
-        <div><h1>${esc(s.me.name)}</h1><p>${mine.length} aktivite</p></div>
+        <div><h1>${esc(s.me.name)}</h1><p>${mine.length} aktivite</p>${s.premium ? '<span class="plus-badge" data-plus>MoveCircle+</span>' : ''}</div>
       </section>
       <p class="follow">${s.me.followers} takipçi • ${s.me.following} takip edilen</p>
       <div class="two-btn"><button class="btn outline" data-edit>Profili düzenle</button><button class="btn outline" data-share>Profili paylaş</button></div>
@@ -68,6 +69,7 @@ export function renderYou(root, params, sub) {
     const totalTime = mine.reduce((t, a) => t + a.duration, 0);
     const longest = mine.reduce((m, a) => Math.max(m, a.distance), 0);
     return `<ul class="menu">
+        <li data-plus>${icon('trophy', 30)}<div><b>MoveCircle+</b><small>${s.premium ? (s.plus?.trial ? 'Ücretsiz deneme aktif' : 'Abonelik aktif') : `${money(PLANS.month.price)}'den başlayan fiyatlarla`}</small></div>${s.premium ? '' : plusTag('Yükselt')}${icon('chevRight')}</li>
         <li data-stats>${icon('stats', 30)}<div><b>İstatistikler</b><small>Bu yıl: ${km(yearDist, 1)} km</small></div>${icon('chevRight')}</li>
         <li data-go="#/maps">${icon('route', 30)}<div><b>Rotalar</b><small>${s.savedRoutes.length} kayıtlı</small></div>${icon('chevRight')}</li>
         <li data-soon="Segmentler">${icon('pin', 30)}<div><b>Segmentler</b><small>—</small></div>${icon('chevRight')}</li>
@@ -83,6 +85,7 @@ export function renderYou(root, params, sub) {
 
   root.addEventListener('click', (e) => {
     if (e.target.closest('[data-sigshare]')) { const me = store.get().me; shareSignature(signatureData(), me.name.split(' ').map((p) => p[0]).slice(0, 2).join(''), esc(me.name)).then(() => toast('İmza hazır')).catch(() => toast('Paylaşılamadı')); return; }
+    if (e.target.closest('[data-plus]')) return premiumSheet();
     const t = e.target.closest('[data-tab],[data-sport],[data-soon],[data-go],[data-stats],[data-edit],[data-share],[data-settings],[data-add]');
     if (!t) return;
     if (t.dataset.tab) { tab = t.dataset.tab; history.replaceState(null, '', `#/you/${tab}`); draw(); }
@@ -97,6 +100,7 @@ export function renderYou(root, params, sub) {
   });
   bindActivityList(root, draw);
   draw();
+  if (params?.get?.('stats') === '1') statsSheet();
 }
 
 function chart(weeks) {
@@ -128,7 +132,32 @@ function statsSheet() {
     const l = mine.filter((a) => a.type === t);
     return `<tr><td>${{ run: 'Koşu', ride: 'Bisiklet', walk: 'Yürüyüş' }[t]}</td><td>${l.length}</td><td>${km(l.reduce((s, a) => s + a.distance, 0), 1)} km</td><td>${duration(l.reduce((s, a) => s + a.duration, 0))}</td></tr>`;
   }).join('');
-  sheet(`${closeBtn()}<h2>İstatistikler</h2><table class="table"><thead><tr><th>Spor</th><th>Adet</th><th>Mesafe</th><th>Süre</th></tr></thead><tbody>${rows}</tbody></table>`);
+  const runs = mine.filter((a) => a.type === 'run' && a.distance > 0);
+  let plus;
+  if (isPlus() && runs.length) {
+    const dist = runs.reduce((s, a) => s + a.distance, 0), time = runs.reduce((s, a) => s + a.duration, 0);
+    const fastest = runs.reduce((b, a) => (a.duration / a.distance < b.duration / b.distance ? a : b));
+    const spk = time / dist; // sn / m
+    const riegel = (m) => duration(Math.round(spk * dist / runs.length * Math.pow(m / (dist / runs.length), 1.06)));
+    const weeks = Math.max(1, (Date.now() - Math.min(...runs.map((a) => new Date(a.date).getTime()))) / 6048e5);
+    plus = `<div class="plus-stats"><div class="ps-head"><b>Gelişmiş istatistikler</b><span class="plus-badge">MoveCircle+</span></div>
+      <div class="ps-grid">
+        <div><small>Ortalama tempo</small><b>${pace(time, dist)} /km</b></div>
+        <div><small>En hızlı koşu</small><b>${pace(fastest.duration, fastest.distance)} /km</b></div>
+        <div><small>Haftalık ortalama</small><b>${km(dist / weeks, 1)} km</b></div>
+        <div><small>Toplam koşu</small><b>${runs.length}</b></div>
+        <div><small>5K tahmini</small><b>${riegel(5000)}</b></div>
+        <div><small>10K tahmini</small><b>${riegel(10000)}</b></div>
+      </div></div>`;
+  } else {
+    plus = `<button class="plus-stats locked" data-plusstats><div class="ps-head"><b>Gelişmiş istatistikler</b>${plusTag()}</div>
+      <div class="ps-grid blur"><div><small>Ortalama tempo</small><b>5:42 /km</b></div><div><small>En hızlı koşu</small><b>4:58 /km</b></div><div><small>5K tahmini</small><b>27dk 10sn</b></div><div><small>10K tahmini</small><b>56dk 40sn</b></div></div>
+      <span class="ps-cta">Tempo, en hızlı koşu ve 5K / 10K tahmini için yükselt</span></button>`;
+  }
+  sheet(`${closeBtn()}<h2>İstatistikler</h2><table class="table"><thead><tr><th>Spor</th><th>Adet</th><th>Mesafe</th><th>Süre</th></tr></thead><tbody>${rows}</tbody></table>${plus}`, (el, close) => {
+    const b = el.querySelector('[data-plusstats]');
+    if (b) b.onclick = () => { close(); premiumSheet('stats'); };
+  });
 }
 
 function editSheet(done) {

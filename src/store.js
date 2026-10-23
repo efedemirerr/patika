@@ -90,6 +90,7 @@ function defaults() {
     joinedEvents: [],
     mapTheme: 'dark',
     premium: false,
+    plus: null,
   };
 }
 

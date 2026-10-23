@@ -5,6 +5,7 @@ import { createCityMap, routeLayer, dotMarker, fitPts } from '../map/render.js';
 import { icon, km, pace, speed, clock, SPORTS, timeTitle, esc } from '../util.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { freezePalette } from '../features/palette.js';
+import { isPlus, plusTag, premiumSheet } from '../features/plus.js';
 import { capsules, capsuleMarker, nearbySealed, openCapsuleSheet } from '../features/capsule.js';
 
 // Simülasyon hızları (m/s): harita kurgusal olduğu için kayıt, seçilen rota üzerinde simüle edilir.
@@ -14,7 +15,7 @@ export function renderRecord(root, params) {
   const st = {
     sport: 'run', route: routeById(params.get('route')) || ROUTES[0], status: 'idle',
     elapsed: 0, dist: 0, lastTick: 0, timer: null, factor: 1, splitStart: { t: 0, d: 0 },
-    ghostOn: true, ghost: null,
+    ghostOn: isPlus(), ghost: null,
   };
 
   root.innerHTML = `
@@ -71,7 +72,7 @@ export function renderRecord(root, params) {
     const sp = SPORTS[st.sport];
     const gw = $('.ghost-toggle-wrap');
     gw.innerHTML = st.status === 'idle' && st.ghost
-      ? `<button class="ghost-toggle ${st.ghostOn ? 'on' : ''}" data-ghost><span class="ghost-ic"></span><span><b>Gölgemle koş</b><small>${esc(st.ghost.act.title)} · ${pace(st.ghost.act.duration, st.ghost.act.distance)} /km</small></span><i></i></button>`
+      ? `<button class="ghost-toggle ${st.ghostOn ? 'on' : ''} ${isPlus() ? '' : 'locked'}" data-ghost><span class="ghost-ic"></span><span><b>Gölgemle koş ${isPlus() ? '' : plusTag()}</b><small>${esc(st.ghost.act.title)} · ${pace(st.ghost.act.duration, st.ghost.act.distance)} /km</small></span><i></i></button>`
       : '';
     if (st.status === 'idle') {
       c.innerHTML = `
@@ -141,6 +142,7 @@ export function renderRecord(root, params) {
       if (st.status !== 'idle' && !confirm('Kayıt iptal edilsin mi?')) return;
       history.length > 1 ? history.back() : (location.hash = '#/home');
     }
+    if (t.dataset.ghost !== undefined && !isPlus()) return premiumSheet('ghost');
     if (t.dataset.ghost !== undefined) { st.ghostOn = !st.ghostOn; drawPlan(); controls(); }
     if (t.dataset.start !== undefined) start();
     if (t.dataset.pause !== undefined) pause();

@@ -15,6 +15,10 @@ export function setLang(l) {
 
 // ---- Tam eşleşen metinler ----
 const EN = {
+  // MoveCircle+
+  'Ücretsiz deneme aktif': 'Free trial active', 'Abonelik aktif': 'Subscription active', 'Gelişmiş istatistikler': 'Advanced stats',
+  'Ortalama tempo': 'Average pace', 'En hızlı koşu': 'Fastest run', 'Haftalık ortalama': 'Weekly average', 'Toplam koşu': 'Total runs',
+  '5K tahmini': '5K estimate', '10K tahmini': '10K estimate', 'Tempo, en hızlı koşu ve 5K / 10K tahmini için yükselt': 'Upgrade for pace, fastest run and 5K / 10K estimates',
   // Genel / alt menü
   'Ana Sayfa': 'Home', 'Haritalar': 'Maps', 'Kayıt': 'Record', 'Gruplar': 'Groups', 'Sen': 'You',
   'Yükselt': 'Upgrade', 'Ekle': 'Add', 'Mesajlar': 'Messages', 'Ara': 'Search', 'Bildirimler': 'Notifications',
@@ -122,6 +126,7 @@ const EN = {
 
 // ---- Kalıplı metinler ----
 const RULES = [
+  [/^(₺[\d.,]+)'den başlayan fiyatlarla$/, 'From $1'],
   [/^%(\d+)$/, '$1%'],
   [/^Bu sokaktan 1 kez geçtin$/, "You've passed this street once"],
   [/^(.+) · (\d+:\d\d) \/km$/, (m, t, p) => `${tr(t)} · ${p} /km`],

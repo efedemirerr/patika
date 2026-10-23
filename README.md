@@ -13,7 +13,7 @@ Tüm isimler, mekânlar, kulüpler ve yarışlar kurgusaldır. Harita, kod ile �
 | Gruplar | Meydan okumalar (ilerleme çubuğu), kulüpler, yerel etkinlikler, yarışlar |
 | Sen | Profil, 12 haftalık ilerleme grafiği, aktiviteler (arama), istatistikler, ayarlar (tema, verileri sıfırla) |
 | Aktivite detayı | Büyük harita, istatistikler, irtifa grafiği, km bölümleri, yorumlar, silme |
-| MoveCircle+ | Abonelik ekranı (demo, ödeme yok) |
+| MoveCircle+ | Yıllık ₺899,99 / Aylık ₺149,99 planları, 30 gün deneme, açılan avantajlar, plan değiştirme ve iptal (demo, ödeme yok) |
 
 Veriler `localStorage` içinde tutulur (`src/store.js`).
 
@@ -29,6 +29,13 @@ Veriler `localStorage` içinde tutulur (`src/store.js`).
 - **Zaman Kapsülü** — Aktivite detayında "Kapsül bırak" ile rotadaki bir noktaya kendine not bırak; kayıt sırasında oradan geçince zarf açılır.
 - **Ritim Partisyonu** — km bölümleri nota dizeğine yazılır (hızlı km yüksek nota); "Dinle" ile Web Audio üzerinden melodi olarak çalar.
 - **Hareket İmzası** — Sen → İlerleme: günün saatleri (dış halka) ve gidilen yönlerden (iç gül) oluşan kişisel glif; PNG olarak paylaşılır.
+
+## MoveCircle+ (demo abonelik)
+Ücretsiz kullanıcıda kilitli (🔒 MoveCircle+ etiketiyle), yükseltince açılan avantajlar:
+- **Gölge Koşucu** (Kayıt) · **Ayak İzi Atlası** (Haritalar) · **Pafta ve Afiş kartpostalları** (Aktivite)
+- **Gelişmiş istatistikler**: ortalama tempo, en hızlı koşu, haftalık ortalama, 5K/10K tahmini (Sen → Daha Fazla → İstatistikler)
+- **MoveCircle+ rozeti** ve parlayan profil halkası
+Kilitli bir özelliğe dokununca yükseltme ekranı o avantajı vurgulayarak açılır. Fiyatlar ve avantajlar `src/features/plus.js` içinde.
 
 ## Dil desteği
 Türkçe ve İngilizce. İlk açılışta cihaz diline göre seçilir; **Sen → Ayarlar → Dil · Language** ile değiştirilir.

@@ -5,6 +5,7 @@ import { km, pace, duration, shortDate, esc, icon, upper } from '../util.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 import { primaryStat } from '../views/common.js';
 import { tr, isEn } from '../i18n.js';
+import { isPlus, plusTag, premiumSheet } from './plus.js';
 
 const W = 1080, H = 1350;
 const SERIF = "Georgia, 'Times New Roman', serif";
@@ -109,13 +110,14 @@ export function postcardSheet(a) {
   let tpl = 'gazete';
   let title = tr(a.title);
   sheet(`${closeBtn()}<h2>Kartpostal</h2>
-    <div class="pc-tabs">${TEMPLATES.map(([k, l]) => `<button class="chip ${k === tpl ? 'active' : ''}" data-tpl="${k}">${l}</button>`).join('')}</div>
+    <div class="pc-tabs">${TEMPLATES.map(([k, l]) => `<button class="chip ${k === tpl ? 'active' : ''}" data-tpl="${k}">${l}${k !== 'gazete' && !isPlus() ? plusTag('+') : ''}</button>`).join('')}</div>
     <div class="pc-preview"></div>
     <label class="pc-title">Başlık<input class="input" maxlength="48" value="${esc(title)}"/></label>
     <button class="btn primary block" data-share>${icon('share', 18)} Paylaş</button>`, (el) => {
     const prev = el.querySelector('.pc-preview');
     const draw = () => (prev.innerHTML = postcardSVG(a, tpl, title));
     el.querySelectorAll('[data-tpl]').forEach((b) => (b.onclick = () => {
+      if (b.dataset.tpl !== 'gazete' && !isPlus()) return premiumSheet('postcard');
       tpl = b.dataset.tpl;
       el.querySelectorAll('[data-tpl]').forEach((x) => x.classList.toggle('active', x === b));
       draw();

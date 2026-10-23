@@ -4,6 +4,7 @@ import { ROUTES } from '../map/city.js';
 import { createCityMap, routeLayer, pinMarker, fitPts, miniMapSVG, accentColor } from '../map/render.js';
 import { icon, km, esc, SPORTS, shortDate, AY_KISA } from '../util.js';
 import { toast, sheet, closeBtn } from '../ui.js';
+import { isPlus, plusTag, premiumSheet } from '../features/plus.js';
 import { routeCharacter, TRAITS, MOODS, traitGlyph, maskRuns, silhouetteSVG } from '../features/character.js';
 
 const LENGTHS = [
@@ -16,7 +17,7 @@ const DIFFS = ['Zorluk', 'Kolay', 'Orta', 'Zor'];
 const SURFACES = ['Zemin', 'Asfalt', 'Toprak', 'Karışık'];
 
 export function renderMaps(root, params) {
-  const f = { len: 0, diff: 0, surf: 0, sort: false, saved: false, mood: 'all', atlas: params?.get('atlas') === '1' };
+  const f = { len: 0, diff: 0, surf: 0, sort: false, saved: false, mood: 'all', atlas: params?.get('atlas') === '1' && isPlus() };
   root.innerHTML = `
     <div class="map-screen">
       <div id="map" class="map-fill"></div>
@@ -27,7 +28,7 @@ export function renderMaps(root, params) {
           <button class="saved-btn" data-saved>${icon('bookmark', 18)} Kaydedilenler</button>
         </div>
         <div class="chips">
-          <button class="chip atlas-chip" data-c="atlas">${icon('layers', 16)} Atlas</button>
+          <button class="chip atlas-chip" data-c="atlas">${icon('layers', 16)} Atlas${isPlus() ? '' : plusTag('+')}</button>
           <button class="chip" data-c="routes">Rotalar</button>
           <button class="chip" data-c="len">Uzunluk</button>
           <button class="chip" data-c="diff">Zorluk</button>
@@ -195,6 +196,7 @@ export function renderMaps(root, params) {
   root.querySelector('.chips').addEventListener('click', (e) => {
     const c = e.target.closest('[data-c]')?.dataset.c;
     if (!c) return;
+    if (c === 'atlas' && !isPlus()) return premiumSheet('atlas');
     if (c === 'atlas') { f.atlas = !f.atlas; history.replaceState(null, '', f.atlas ? '#/maps?atlas=1' : '#/maps'); return draw(); }
     f.atlas = false; history.replaceState(null, '', '#/maps');
     if (c === 'len') f.len = (f.len + 1) % LENGTHS.length;

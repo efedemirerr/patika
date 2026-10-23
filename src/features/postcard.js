@@ -74,7 +74,7 @@ export function postcardSVG(a, template, title) {
       <path d="${routePath(pts, { x: 120, y: 120, w: 840, h: 920 })}" fill="none" stroke="${INK.red}" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
       <text x="80" y="1150" font-family="${SERIF}" font-size="56" font-style="italic" fill="${INK.ink}">${esc(lines.join(' '))}</text>
       <text x="80" y="1230" font-family="${MONO}" font-size="30" fill="${INK.ink}">${esc(stats.map(([, v]) => v).join('  ·  '))}</text>
-      <text x="80" y="1290" font-family="${MONO}" font-size="24" fill="${INK.ink}" opacity=".6">${isEn ? 'SHEET' : 'PAFTA'} ${esc(a.id.slice(-4).toUpperCase())} · ${esc(date)} · ${isEn ? 'LIMAN CITY' : 'LİMAN ŞEHRİ'}</text>
+      <text x="80" y="1290" font-family="${MONO}" font-size="24" fill="${INK.ink}" opacity=".6">${isEn ? 'SHEET' : 'PAFTA'} ${esc(a.id.slice(-4).toUpperCase())} · ${esc(date)} · ${isEn ? 'KADIKÖY · ISTANBUL' : 'KADIKÖY · İSTANBUL'}</text>
       <g transform="translate(940 1190)"><path d="M0 -40 L12 0 L0 -8 L-12 0Z" fill="${INK.ink}"/><text y="30" text-anchor="middle" font-family="${SANS}" font-size="24" fill="${INK.ink}">K</text></g>
     </svg>`;
   }

@@ -1,120 +1,82 @@
-// Tamamen kurgusal, çevrimdışı üretilen şehir: "Liman Şehri".
-// Koordinatlar harita birimi (0..1000), 1 birim = 10 metre. y yukarı doğru artar.
+// Gerçek harita: İstanbul, Kadıköy çevresi (Moda, Fenerbahçe, Caddebostan, Validebağ, Çamlıca).
+// Veri: scripts/fetch-map-data.mjs ile GitHub Actions'ta üretilen src/map/data.json
+// (© OpenStreetMap katkıda bulunanlar, OSRM rotalama, Copernicus DEM). Uygulama çalışırken ağ isteği yok.
+//
+// Uygulamanın içi yerel bir düzlem kullanır: 1 birim = 12 m, x doğuya, y kuzeye doğru artar.
+// Böylece mesafe, tempo, film, mühür gibi tüm hesaplar metre cinsinden doğru kalır;
+// gerçek enlem/boylama dönüşüm yalnızca harita çizilirken yapılır (toLatLng / fromLatLng).
+import DATA from './data.json';
 
 export const SIZE = 1000;
-export const METERS_PER_UNIT = 10;
+export const METERS_PER_UNIT = DATA.meta.metersPerUnit;
+export const BBOX = DATA.meta.bbox;
+export const MAP_SOURCE = DATA.meta.source;
 
-function rng(seed) {
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+const KX = 111320 * Math.cos(((BBOX.s + BBOX.n) / 2) * Math.PI / 180), KY = 110574;
+export const toLatLng = ([x, y]) => [BBOX.s + (y * METERS_PER_UNIT) / KY, BBOX.w + (x * METERS_PER_UNIT) / KX];
+export const fromLatLng = (lat, lng) => [((lng - BBOX.w) * KX) / METERS_PER_UNIT, ((lat - BBOX.s) * KY) / METERS_PER_UNIT];
+export const inArea = ([x, y]) => x >= 0 && y >= 0 && x <= SIZE && y <= SIZE;
 
-export function coastY(x) {
-  return 290 + 55 * Math.sin(x / 150 + 0.6) + 22 * Math.sin(x / 47) + (x < 260 ? (260 - x) * 0.35 : 0);
-}
-
-export const HILL = { x: 790, y: 820, r: 230 };
-
+// ---------- Yükseklik (Copernicus DEM ızgarası, çift doğrusal) ----------
+const EW = ((BBOX.e - BBOX.w) * KX) / METERS_PER_UNIT, EH = ((BBOX.n - BBOX.s) * KY) / METERS_PER_UNIT;
 export function elevation(x, y) {
-  const d = Math.hypot(x - HILL.x, y - HILL.y);
-  const hill = Math.max(0, 1 - d / HILL.r);
-  return Math.round(4 + 260 * hill * hill + Math.max(0, y - coastY(x)) * 0.03);
+  const { n, z } = DATA.elev;
+  const gx = Math.min(n - 1.0001, Math.max(0, (x / EW) * (n - 1))), gy = Math.min(n - 1.0001, Math.max(0, (y / EH) * (n - 1)));
+  const i = Math.floor(gx), j = Math.floor(gy), fx = gx - i, fy = gy - j;
+  const v = (a, b) => z[b * n + a];
+  return Math.round(v(i, j) * (1 - fx) * (1 - fy) + v(i + 1, j) * fx * (1 - fy) + v(i, j + 1) * (1 - fx) * fy + v(i + 1, j + 1) * fx * fy);
 }
 
-function blob(cx, cy, r, rand, jitter = 0.18, n = 40) {
-  const pts = [];
-  const phase = rand() * 10;
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2;
-    const k = 1 + jitter * Math.sin(a * 3 + phase) + jitter * 0.5 * Math.sin(a * 7 + phase * 2);
-    pts.push([cx + Math.cos(a) * r * k, cy + Math.sin(a) * r * k]);
+// ---------- Kıyı, kara ve yeşil alanlar ----------
+const clamp = ([x, y]) => [Math.min(SIZE, Math.max(0, x)), Math.min(SIZE, Math.max(0, y))];
+const perim = ([x, y]) => (y <= 0 ? x : x >= SIZE ? SIZE + y : y >= SIZE ? 3 * SIZE - x : 4 * SIZE - y); // saat yönü tersine çevre konumu
+const CORNERS = [[SIZE, 0, SIZE], [SIZE, SIZE, 2 * SIZE], [0, SIZE, 3 * SIZE], [0, 0, 4 * SIZE]];
+
+/** OSM kıyı çizgileri (kara solda) → kara çokgenleri. Açık zincirler alanın kenarından dolanarak kapatılır. */
+function buildLand() {
+  const polys = [];
+  for (const line of DATA.coastLines) {
+    const closed = Math.hypot(line[0][0] - line.at(-1)[0], line[0][1] - line.at(-1)[1]) < 0.5;
+    if (closed) { polys.push(line); continue; }
+    const pts = line.map(clamp);
+    const t0 = perim(pts.at(-1)); let t1 = perim(pts[0]); if (t1 < t0) t1 += 4 * SIZE;
+    const ring = pts.slice();
+    for (const [cx, cy, ct] of [...CORNERS, ...CORNERS.map(([a, b, c]) => [a, b, c + 4 * SIZE])]) if (ct > t0 && ct < t1) ring.push([cx, cy]);
+    ring.push(pts[0]);
+    polys.push(ring);
   }
-  pts.push(pts[0]);
-  return pts;
+  return polys;
 }
+const COAST_PTS = DATA.coastLines.flat();
 
-export const DISTRICTS = [
-  { name: 'Martılı', cx: 170, cy: 430, r: 125, ang: 0.2 },
-  { name: 'Kuzeytepe', cx: 300, cy: 700, r: 150, ang: -0.15 },
-  { name: 'Sahilkent', cx: 470, cy: 390, r: 140, ang: 0.35 },
-  { name: 'Çınaraltı', cx: 570, cy: 620, r: 125, ang: 0.05 },
-  { name: 'Yelkenli', cx: 790, cy: 370, r: 150, ang: -0.3 },
-  { name: 'Bağlarbaşı', cx: 110, cy: 830, r: 110, ang: 0.4 },
-  { name: 'Taşhan', cx: 920, cy: 570, r: 100, ang: 0.1 },
-];
-
-export const PARKS = [
-  { name: 'Rüzgâr Parkı', cx: 520, cy: 330, r: 26 },
-  { name: 'Kordon Atletizm Alanı', cx: 235, cy: 400, r: 24 },
-  { name: 'Çamlık Korusu', cx: 640, cy: 760, r: 42 },
-  { name: 'Fener Bahçesi', cx: 870, cy: 300, r: 22 },
-];
-
-function buildGeometry() {
-  const rand = rng(42);
-  const land = [];
-  for (let x = -20; x <= SIZE + 20; x += 8) land.push([x, coastY(x)]);
-  land.push([SIZE + 20, SIZE + 20], [-20, SIZE + 20], land[0]);
-
-  const hills = blob(HILL.x, HILL.y, HILL.r, rand, 0.12, 60);
-  const contours = [];
-  for (let r = 40; r < HILL.r; r += 32) contours.push(blob(HILL.x + rand() * 10, HILL.y + rand() * 10, r, rand, 0.16, 48));
-
-  const parks = PARKS.map((p) => ({ ...p, poly: blob(p.cx, p.cy, p.r, rand, 0.15, 24) }));
-
-  // Mahalle sokak ızgaraları
-  const streets = [];
-  for (const d of DISTRICTS) {
-    const s = 17;
-    const cos = Math.cos(d.ang), sin = Math.sin(d.ang);
-    for (const dir of [0, 1]) {
-      for (let u = -d.r; u <= d.r; u += s) {
-        let seg = [];
-        for (let v = -d.r; v <= d.r; v += 4) {
-          const lx = dir ? u : v, ly = dir ? v : u;
-          const x = d.cx + lx * cos - ly * sin;
-          const y = d.cy + lx * sin + ly * cos;
-          const edge = d.r * (0.82 + 0.18 * Math.sin(Math.atan2(ly, lx) * 4 + d.cx));
-          const inside = Math.hypot(lx, ly) <= edge && y > coastY(x) + 6 && Math.hypot(x - HILL.x, y - HILL.y) > 120;
-          if (inside) seg.push([x, y]);
-          else if (seg.length) { if (seg.length > 2) streets.push(seg); seg = []; }
-        }
-        if (seg.length > 2) streets.push(seg);
-      }
-    }
+function pip(x, y, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
   }
-
-  const majors = [];
-  const boulevard = [];
-  for (let x = 0; x <= SIZE; x += 6) boulevard.push([x, coastY(x) + 14]);
-  majors.push(boulevard);
-  const avenue = (a, b) => majors.push([a, b]);
-  avenue([170, 430], [300, 700]);
-  avenue([300, 700], [570, 620]);
-  avenue([470, 390], [570, 620]);
-  avenue([570, 620], [790, 370]);
-  avenue([790, 370], [920, 570]);
-  avenue([110, 830], [300, 700]);
-  avenue([170, 430], [470, 390]);
-
-  const highway = [];
-  for (let x = -20; x <= SIZE + 20; x += 10) highway.push([x, 540 + 45 * Math.sin(x / 210 + 1)]);
-
-  const labels = [
-    ...DISTRICTS.map((d) => ({ text: d.name.toLocaleUpperCase('tr'), x: d.cx, y: d.cy + 10, kind: 'district' })),
-    ...PARKS.map((p) => ({ text: p.name, x: p.cx, y: p.cy - p.r - 10, kind: 'park' })),
-    { text: 'Mavi Körfez', x: 470, y: 150, kind: 'water' },
-    { text: 'Liman Şehri', x: 640, y: 470, kind: 'city' },
-  ];
-
-  return { land, hills, contours, parks, streets, majors, highway, labels };
+  return inside;
 }
 
-export const CITY = buildGeometry();
+export const PARKS = DATA.parks.map((p) => {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const [x, y] of p.poly) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  return { ...p, box: [x0, y0, x1, y1] };
+});
+
+/** Nokta bir park / koru / orman içinde mi? */
+export function greenAt(x, y) {
+  return PARKS.some((p) => x >= p.box[0] - 3 && x <= p.box[2] + 3 && y >= p.box[1] - 3 && y <= p.box[3] + 3 && pip(x, y, p.poly));
+}
+
+/** Kıyıya uzaklık (metre). */
+export function coastDistance(x, y) {
+  let d = Infinity;
+  for (let i = 0; i < COAST_PTS.length; i += 2) { const p = COAST_PTS[i]; const q = Math.hypot(p[0] - x, p[1] - y); if (q < d) d = q; }
+  return d * METERS_PER_UNIT;
+}
+
+export const CITY = { land: buildLand(), parks: PARKS, roads: DATA.roads };
 
 // ---------- Rotalar ----------
 function densify(pts, step = 3) {
@@ -127,29 +89,6 @@ function densify(pts, step = 3) {
   return out;
 }
 
-function rect(cx, cy, w, h, ang) {
-  const c = Math.cos(ang), s = Math.sin(ang);
-  const corner = (dx, dy) => [cx + dx * c - dy * s, cy + dx * s + dy * c];
-  const p = [corner(-w / 2, -h / 2), corner(w / 2, -h / 2), corner(w / 2, h / 2), corner(-w / 2, h / 2)];
-  return [...p, p[0]];
-}
-
-function coastPath(x0, x1, off = 14) {
-  const pts = [];
-  const step = x1 > x0 ? 6 : -6;
-  for (let x = x0; step > 0 ? x <= x1 : x >= x1; x += step) pts.push([x, coastY(x) + off]);
-  return pts;
-}
-
-function circle(cx, cy, r, n = 36) {
-  const pts = [];
-  for (let i = 0; i <= n; i++) {
-    const a = (i / n) * Math.PI * 2;
-    pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
-  }
-  return pts;
-}
-
 export function pathLength(pts) {
   let d = 0;
   for (let i = 1; i < pts.length; i++) d += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
@@ -158,29 +97,22 @@ export function pathLength(pts) {
 
 export function elevationGain(pts) {
   let g = 0;
-  for (let i = 1; i < pts.length; i++) {
-    const diff = elevation(...pts[i]) - elevation(...pts[i - 1]);
-    if (diff > 0) g += diff;
+  // ızgara gürültüsünü bastırmak için ~100 m'de bir örnekle
+  const step = Math.max(1, Math.round(100 / METERS_PER_UNIT / 3));
+  let prev = elevation(...pts[0]);
+  for (let i = step; i < pts.length; i += step) {
+    const e = elevation(...pts[i]);
+    if (e > prev) g += e - prev;
+    prev = e;
   }
-  return g;
+  return Math.round(g);
 }
 
-const RAW_ROUTES = [
-  { id: 'r1', name: 'Sahil Akşam Turu', surface: 'Asfalt', pts: [...coastPath(380, 640), ...coastPath(640, 380, 32)] },
-  { id: 'r2', name: 'Martılı Blok Döngüsü', surface: 'Asfalt', pts: rect(170, 450, 120, 85, 0.2) },
-  { id: 'r3', name: 'Kuzeytepe Tırmanışı', surface: 'Karışık', pts: [[300, 640], [420, 690], [560, 700], [640, 760], [720, 800], [760, 840], [640, 760], [560, 700], [420, 690], [300, 640]] },
-  { id: 'r4', name: 'Çınaraltı 5K', surface: 'Asfalt', pts: rect(570, 620, 160, 90, 0.05) },
-  { id: 'r5', name: 'Yelkenli Liman Koşusu', surface: 'Asfalt', pts: [...coastPath(700, 960), ...coastPath(960, 700, 30)] },
-  { id: 'r6', name: 'Rüzgâr Parkı Turu', surface: 'Toprak', pts: [...circle(520, 330, 34), ...circle(520, 330, 34)] },
-  { id: 'r7', name: 'Körfez Uzun Koşu', surface: 'Asfalt', pts: [...coastPath(60, 940), ...coastPath(940, 60, 30)] },
-  { id: 'r8', name: 'Bağlarbaşı Bisiklet Rotası', surface: 'Karışık', pts: [[110, 830], [300, 700], [570, 620], [790, 370], [920, 570], [790, 370], [570, 620], [300, 700], [110, 830]] },
-];
-
-export const ROUTES = RAW_ROUTES.map((r) => {
+export const ROUTES = DATA.routes.map((r) => {
   const pts = densify(r.pts);
   const distance = pathLength(pts);
   const gain = elevationGain(pts);
-  const difficulty = gain > 400 || distance > 15000 ? 'Zor' : gain > 120 || distance > 7000 ? 'Orta' : 'Kolay';
+  const difficulty = gain > 250 || distance > 15000 ? 'Zor' : gain > 70 || distance > 7000 ? 'Orta' : 'Kolay';
   return { ...r, pts, distance, gain, difficulty };
 });
 
@@ -189,7 +121,7 @@ export const routeById = (id) => ROUTES.find((r) => r.id === id);
 // Bir yol üzerinde verilen mesafedeki noktayı ve o ana kadarki kısmı döndürür
 export function walkPath(pts, meters) {
   const total = pathLength(pts);
-  const laps = Math.floor(meters / total);
+  const laps = total ? Math.floor(meters / total) : 0;
   let remain = (meters - laps * total) / METERS_PER_UNIT;
   const traveled = [pts[0]];
   for (let i = 1; i < pts.length; i++) {

@@ -58,6 +58,20 @@ jobs:
       - name: Web build
         run: npm run build
 
+      - name: Duman testi (harita ekran görüntüleri → smoke dalı)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm i --no-save playwright@1.48.2
+          npx playwright install --with-deps chromium >/dev/null
+          (npx vite preview --port 4173 --strictPort >/dev/null 2>&1 &)
+          sleep 4
+          node scripts/smoke.mjs
+          cd smoke-out && git init -q && git checkout -q -b smoke && git add . \
+            && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "smoke ${GITHUB_SHA::7}" \
+            && git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" smoke
+
       - name: Web paketini zip'le
         run: cd dist && zip -r ../patika-web.zip .
 

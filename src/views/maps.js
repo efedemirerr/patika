@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import { store } from '../store.js';
-import { ROUTES } from '../map/city.js';
+import { ROUTES, fromLatLng, inArea } from '../map/city.js';
 import { createCityMap, routeLayer, pinMarker, fitPts, miniMapSVG, accentColor } from '../map/render.js';
 import { icon, km, esc, SPORTS, shortDate, AY_KISA } from '../util.js';
 import { toast, sheet, closeBtn } from '../ui.js';
@@ -143,7 +143,7 @@ export function renderMaps(root, params) {
 
   ctx.map.on('click', (e) => {
     if (!f.atlas) return;
-    const p = [e.latlng.lng, e.latlng.lat];
+    const p = ctx.xy(e.latlng);
     const near = store.myActivities().filter(inRange).filter((x) => store.activityPts(x).some((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) < 9));
     hl.clearLayers();
     L.circleMarker(e.latlng, { renderer: ctx.renderer, radius: 10, color: '#fff', weight: 2, fillOpacity: 0 }).addTo(hl);
@@ -217,7 +217,18 @@ export function renderMaps(root, params) {
   root.querySelector('[data-saved]').onclick = () => { f.saved = !f.saved; f.atlas = false; draw(); };
   root.querySelector('[data-sport]').onclick = () => toast('Şimdilik yalnızca koşu rotaları');
   root.querySelector('[data-3d]').onclick = () => toast('3D görünüm yakında');
-  root.querySelector('[data-locate]').onclick = () => ctx.map.flyToBounds([[200, 300], [500, 700]], { duration: 0.6 });
+  let hereMk = null;
+  const home = () => ctx.map.flyToBounds([ctx.ll([130, 360]), ctx.ll([440, 560])], { duration: 0.6 });
+  root.querySelector('[data-locate]').onclick = () => {
+    if (!navigator.geolocation) return home();
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const p = fromLatLng(pos.coords.latitude, pos.coords.longitude);
+      if (!inArea(p)) { toast('Konumun harita bölgesinin (Kadıköy) dışında'); return home(); }
+      if (hereMk) hereMk.remove();
+      hereMk = L.marker(ctx.ll(p), { icon: L.divIcon({ className: 'me-here', iconSize: [18, 18] }), interactive: false }).addTo(ctx.map);
+      ctx.map.flyTo(ctx.ll(p), ctx.z(1.5), { duration: 0.6 });
+    }, () => { toast('Konum alınamadı'); home(); }, { enableHighAccuracy: true, timeout: 10000 });
+  };
   root.querySelector('[data-layers]').onclick = () => {
     store.update((s) => (s.mapTheme = s.mapTheme === 'dark' ? 'light' : 'dark'));
     toast(store.get().mapTheme === 'dark' ? 'Koyu harita' : 'Açık harita');
@@ -226,8 +237,8 @@ export function renderMaps(root, params) {
   };
 
   draw();
-  if (f.atlas && months.length) ctx.map.fitBounds([[150, 0], [900, 1000]]);
-  else ctx.map.setView([380, 480], 0.25);
+  if (f.atlas && months.length) fitPts(ctx, store.myActivities().flatMap((x) => store.activityPts(x)), 30);
+  else ctx.map.setView(ctx.ll([360, 480]), ctx.z(-0.25));
   return () => ctx.map.remove();
 }
 

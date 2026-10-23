@@ -77,7 +77,7 @@ export function renderActivity(root, params, id) {
     ctx.map.on('click', (e) => {
       if (!dropMode) return;
       // Dokunulan yere en yakın rota noktasına kapsül bırak
-      const p = [e.latlng.lng, e.latlng.lat];
+      const p = ctx.xy(e.latlng);
       const near = pts.reduce((b, q) => (Math.hypot(q[0] - p[0], q[1] - p[1]) < Math.hypot(b[0] - p[0], b[1] - p[1]) ? q : b), pts[0]);
       setDrop(false);
       dropCapsuleSheet(near, drawCaps);

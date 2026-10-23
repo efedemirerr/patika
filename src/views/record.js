@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import { store } from '../store.js';
-import { ROUTES, routeById, walkPath, elevationGain } from '../map/city.js';
+import { ROUTES, routeById, walkPath, elevationGain, fromLatLng, inArea, METERS_PER_UNIT } from '../map/city.js';
 import { createCityMap, routeLayer, dotMarker, fitPts } from '../map/render.js';
 import { icon, km, pace, speed, clock, SPORTS, timeTitle, esc } from '../util.js';
 import { sheet, closeBtn, toast } from '../ui.js';
@@ -16,6 +16,7 @@ export function renderRecord(root, params) {
     sport: 'run', route: routeById(params.get('route')) || ROUTES[0], status: 'idle',
     elapsed: 0, dist: 0, lastTick: 0, timer: null, factor: 1, splitStart: { t: 0, d: 0 },
     ghostOn: isPlus(), ghost: null,
+    mode: 'sim', track: [], watch: null, lastFix: null, acc: null, warnedOut: false,
   };
 
   root.innerHTML = `
@@ -27,7 +28,8 @@ export function renderRecord(root, params) {
         <button class="fab" data-fit>${icon('locate')}</button>
       </div>
       <div class="rec-panel">
-        <div class="gps"><span class="gps-bars"><i></i><i></i><i></i><i></i></span> GPS hazır <small>(simülasyon)</small></div>
+        <div class="gps-row"><div class="gps"><span class="gps-bars"><i></i><i></i><i></i><i></i></span> <span data-v="gps">GPS hazır</span> <small data-v="gpsSub"></small></div>
+          <div class="mode-seg"><button class="on" data-mode="sim">Simülasyon</button><button data-mode="gps">Gerçek GPS</button></div></div>
         <div class="rec-stats">
           <div><b data-v="time">00:00</b><span>Süre</span></div>
           <div><b data-v="pace">–:––</b><span data-v="paceLabel">Bölüm ort. (/km)</span></div>
@@ -102,6 +104,13 @@ export function renderRecord(root, params) {
 
   const tick = () => {
     const now = performance.now();
+    if (st.mode === 'gps') {
+      st.elapsed += (now - st.lastTick) / 1000; st.lastTick = now;
+      if (Math.floor(st.dist / 1000) > Math.floor(st.splitStart.d / 1000)) st.splitStart = { t: st.elapsed, d: Math.floor(st.dist / 1000) * 1000 };
+      if (ghostMk && st.ghost) ghostStep();
+      updateStats();
+      return;
+    }
     const dt = ((now - st.lastTick) / 1000) * st.factor;
     st.lastTick = now;
     st.elapsed += dt;
@@ -110,7 +119,16 @@ export function renderRecord(root, params) {
     if (Math.floor(st.dist / 1000) > Math.floor(st.splitStart.d / 1000)) st.splitStart = { t: st.elapsed, d: Math.floor(st.dist / 1000) * 1000 };
     const w = walkPath(st.route.pts, st.dist);
     me.setLatLng(ctx.ll(w.point));
-    if (ghostMk && st.ghost) {
+    if (ghostMk && st.ghost) ghostStep();
+    const cap = nearbySealed(w.point);
+    if (cap) { pause(); openCapsuleSheet(cap); drawCaps(); }
+    live.clearLayers();
+    routeLayer(ctx, w.laps ? st.route.pts : w.traveled, { weight: 5 }).addTo(live);
+    updateStats();
+  };
+
+  const ghostStep = () => {
+    {
       const gd = st.elapsed * st.ghost.speed;
       ghostMk.setLatLng(ctx.ll(walkPath(st.route.pts, gd).point));
       // Aynı mesafeye gölge kaç saniyede ulaşırdı?
@@ -119,17 +137,55 @@ export function renderRecord(root, params) {
       row.classList.toggle('ahead', delta < 0); row.classList.toggle('behind', delta > 0);
       $('[data-v="ghost"]').textContent = Math.abs(delta) < 2 ? 'Gölge seninle aynı hizada' : delta < 0 ? `Gölgenin ${Math.abs(delta)} sn önündesin` : `Gölgenin ${delta} sn gerisindesin`;
     }
-    const cap = nearbySealed(w.point);
+  };
+
+  // ---------- Gerçek GPS ----------
+  const gpsLabel = (main, sub2) => { $('[data-v="gps"]').textContent = main; $('[data-v="gpsSub"]').textContent = sub2; };
+  const onFix = (pos) => {
+    const { latitude, longitude, accuracy } = pos.coords;
+    st.acc = accuracy;
+    gpsLabel(accuracy <= 25 ? 'GPS güçlü' : accuracy <= 60 ? 'GPS orta' : 'GPS zayıf', `(±${Math.round(accuracy)} m)`);
+    root.querySelector('.gps').dataset.q = accuracy <= 25 ? '4' : accuracy <= 60 ? '2' : '1';
+    const p = fromLatLng(latitude, longitude);
+    if (inArea(p)) me.setLatLng(ctx.ll(p));
+    else if (!st.warnedOut) { st.warnedOut = true; toast('Harita Kadıköy bölgesini gösteriyor; kayıt yine de doğru ölçülür'); }
+    if (st.status !== 'running' || accuracy > 60) return;
+    if (st.lastFix) {
+      const d = Math.hypot(p[0] - st.lastFix[0], p[1] - st.lastFix[1]) * METERS_PER_UNIT;
+      if (d < Math.max(3, accuracy / 4)) return; // titremeyi yok say
+      st.dist += d;
+    }
+    st.lastFix = p; st.track.push(p);
+    const cap = nearbySealed(p);
     if (cap) { pause(); openCapsuleSheet(cap); drawCaps(); }
     live.clearLayers();
-    routeLayer(ctx, w.laps ? st.route.pts : w.traveled, { weight: 5 }).addTo(live);
-    updateStats();
+    if (st.track.length > 1) routeLayer(ctx, st.track, { weight: 5 }).addTo(live);
+    if (inArea(p)) ctx.map.panTo(ctx.ll(p), { animate: true });
+  };
+  const onGpsErr = (err) => {
+    gpsLabel(err.code === 1 ? 'Konum izni yok' : 'Konum alınamadı', err.code === 1 ? '(ayarlardan izin ver)' : '(tekrar deneniyor)');
+    if (err.code === 1) { toast('Gerçek GPS için konum iznine izin ver'); setMode('sim'); }
+  };
+  const watchOn = () => {
+    if (st.watch != null || !navigator.geolocation) return;
+    st.watch = navigator.geolocation.watchPosition(onFix, onGpsErr, { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 });
+  };
+  const watchOff = () => { if (st.watch != null) navigator.geolocation.clearWatch(st.watch); st.watch = null; };
+  const setMode = (m) => {
+    if (st.status !== 'idle') return toast('Mod, kayıt başlamadan değiştirilebilir');
+    if (m === 'gps' && !navigator.geolocation) return toast('Bu cihaz konum desteklemiyor');
+    st.mode = m;
+    root.querySelectorAll('[data-mode]').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+    $('.promo-pill').hidden = m === 'gps';
+    if (m === 'gps') { gpsLabel('Konum bekleniyor…', ''); watchOn(); }
+    else { watchOff(); gpsLabel('GPS hazır', ''); delete root.querySelector('.gps').dataset.q; me.setLatLng(ctx.ll(st.route.pts[0])); }
   };
 
   const start = () => {
     freezePalette(true);
     st.status = 'running';
     st.lastTick = performance.now();
+    if (st.mode === 'gps') { st.lastFix = null; watchOn(); }
     st.timer = setInterval(tick, 250);
     controls();
   };
@@ -148,6 +204,7 @@ export function renderRecord(root, params) {
     if (t.dataset.pause !== undefined) pause();
     if (t.dataset.resume !== undefined) start();
     if (t.dataset.finish !== undefined) finish();
+    if (t.dataset.mode) setMode(t.dataset.mode);
     if (t.dataset.fit !== undefined) fitPts(ctx, st.route.pts, 70);
     if (t.dataset.fast !== undefined) {
       st.factor = st.factor === 1 ? 10 : st.factor === 10 ? 30 : 1;
@@ -165,8 +222,9 @@ export function renderRecord(root, params) {
 
   function finish() {
     if (st.dist < 20) { toast('Kaydetmek için çok kısa'); return; }
-    const w = walkPath(st.route.pts, st.dist);
-    const path = w.laps ? st.route.pts : w.traveled;
+    const gps = st.mode === 'gps';
+    const w = gps ? { laps: 0 } : walkPath(st.route.pts, st.dist);
+    const path = gps ? (st.track.length > 1 ? st.track : [st.track[0] || [0, 0], st.track[0] || [0, 0]]) : w.laps ? st.route.pts : w.traveled;
     sheet(`<h2>Aktiviteyi kaydet</h2>
       <form class="form">
         <input name="title" class="input" value="${timeTitle(st.sport)}" />
@@ -181,7 +239,7 @@ export function renderRecord(root, params) {
         e.preventDefault();
         const f = new FormData(e.target);
         const a = store.addActivity({
-          userId: 'me', type: st.sport, routeId: st.route.id, path: path.filter((_, i) => i % 2 === 0 || i === path.length - 1),
+          userId: 'me', type: st.sport, routeId: gps ? null : st.route.id, gps, path: path.filter((_, i) => i % 2 === 0 || i === path.length - 1),
           date: new Date().toISOString(), title: f.get('title') || timeTitle(st.sport), desc: f.get('desc'),
           distance: Math.round(st.dist), duration: Math.round(st.elapsed), gain: Math.round(elevationGain(path) * (w.laps + 1)),
           kudos: 0, liked: false, comments: [], private: !!f.get('private'),
@@ -195,5 +253,5 @@ export function renderRecord(root, params) {
 
   drawPlan();
   controls();
-  return () => { clearInterval(st.timer); freezePalette(false); ctx.map.remove(); };
+  return () => { clearInterval(st.timer); watchOff(); freezePalette(false); ctx.map.remove(); };
 }

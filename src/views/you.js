@@ -183,7 +183,7 @@ function settingsSheet() {
       <li data-palette>${icon('flame', 26)}<div><b>Hava Paleti</b><small>${store.get().palette !== false ? 'Açık · renkler güneşe göre değişir' : 'Kapalı · sabit renkler'}</small>${paletteBand()}</div></li>
       <li data-lang>${icon('chat', 26)}<div><b>Dil · Language</b><small>${LANG === 'en' ? 'English' : 'Türkçe'}</small><span class="lang-seg"><button class="${LANG === 'tr' ? 'on' : ''}" data-l="tr">Türkçe</button><button class="${LANG === 'en' ? 'on' : ''}" data-l="en">English</button></span></div></li>
       <li data-reset>${icon('trash', 26)}<div><b>Demo verilerini sıfırla</b><small>Tüm yerel kayıtlar silinir</small></div></li>
-      <li>${icon('stats', 26)}<div><b>Hakkında</b><small>MoveCircle taslak sürüm 0.3 · tamamen çevrimdışı, sunucusuz</small></div></li>
+      <li>${icon('stats', 26)}<div><b>Hakkında</b><small>MoveCircle taslak sürüm 0.5 · gerçek çevrimdışı harita (Kadıköy), sunucusuz</small></div></li>
     </ul>`, (el, close) => {
     el.querySelectorAll('[data-l]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); if (b.dataset.l !== LANG) setLang(b.dataset.l); }));
     el.querySelector('[data-palette]').onclick = () => { store.update((st) => (st.palette = st.palette === false)); applyPalette(); close(); toast(store.get().palette !== false ? 'Hava Paleti açık' : 'Hava Paleti kapalı'); };

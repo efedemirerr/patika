@@ -1,3 +1,4 @@
+import { toLatLng } from '../map/city.js';
 import { tr } from '../i18n.js';
 import { store } from '../store.js';
 import { miniMapSVG } from '../map/render.js';
@@ -12,9 +13,9 @@ export function primaryStat(a) {
 }
 
 export function coordLabel([x, y]) {
-  // Kurgusal şehrin harita birimlerinden temsili koordinat etiketi
-  const lat = 38.38 + y / 25000, lon = 27.05 + x / 20000;
-  const dms = (v, a, b) => `${Math.floor(v)}°${String(Math.round((v % 1) * 60)).padStart(2, '0')}′${v >= 0 ? a : b}`;
+  // Gerçek koordinat (derece°dakika′saniye″)
+  const [lat, lon] = toLatLng([x, y]);
+  const dms = (v, a, b) => { const m = (v % 1) * 60; return `${Math.floor(v)}°${String(Math.floor(m)).padStart(2, '0')}′${String(Math.round((m % 1) * 60)).padStart(2, '0')}″${v >= 0 ? a : b}`; };
   return `${dms(lat, 'K', 'G')} · ${dms(lon, 'D', 'B')}`;
 }
 

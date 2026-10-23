@@ -49,11 +49,11 @@ export function openFilm(a, { onClose } = {}) {
 
   const mapEl = wrap.querySelector('.film-map');
   const ctx = createCityMap(mapEl, { static: true, theme: 'dark', mini: true });
-  ctx.map.setZoom(1.75, { animate: false });
+  ctx.map.setZoom(ctx.z(1.75), { animate: false });
   const ghost = L.polyline(ctx.lls(pts), { renderer: ctx.renderer, color: '#ffffff', weight: 2, opacity: 0.25, dashArray: '4 6' }).addTo(ctx.map);
   const trail = L.layerGroup().addTo(ctx.map);
   const head = L.circleMarker(ctx.ll(pts[0]), { renderer: ctx.renderer, radius: 7, color: '#fff', weight: 3, fillColor: '#c6f432', fillOpacity: 1 }).addTo(ctx.map);
-  ctx.map.setView(ctx.ll(pts[0]), 1.75, { animate: false });
+  ctx.map.setView(ctx.ll(pts[0]), ctx.z(1.75), { animate: false });
 
   const $ = (s) => wrap.querySelector(s);
   let ft = 0, playing = true, speed = 1, last = performance.now(), raf = 0, ended = false;
@@ -64,7 +64,7 @@ export function openFilm(a, { onClose } = {}) {
     trail.clearLayers();
     routeLayer(ctx, w.traveled.length > 1 ? w.traveled : [pts[0], pts[0]], { weight: 5 }).addTo(trail);
     head.setLatLng(ctx.ll(w.point));
-    ctx.map.setView(ctx.ll(w.point), 1.75, { animate: false });
+    ctx.map.setView(ctx.ll(w.point), ctx.z(1.75), { animate: false });
     $('[data-v="tc"]').textContent = clock(time);
     $('[data-v="km"]').textContent = km((dist / total) * a.distance);
     $('[data-v="pace"]').textContent = pace(s.sec, s.meters);

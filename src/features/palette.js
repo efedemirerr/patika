@@ -2,8 +2,8 @@
 // Ağ yok: güneş konumu enlem/boylam ve saatten hesaplanır.
 import { store } from '../store.js';
 
-// Varsayılan konum: Ege kıyısı (kurgusal Liman Şehri için temsili)
-const LAT = 38.4, LON = 27.1;
+// Konum: Kadıköy, İstanbul (haritadaki bölge)
+const LAT = 40.98, LON = 29.04;
 
 export const PRESETS = {
   night: { label: 'Gece', accent: '#b9a7ff', bg: '#08090f' },

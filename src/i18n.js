@@ -98,8 +98,23 @@ const EN = {
   'Hava Paleti': 'Sky Palette', 'Açık · renkler güneşe göre değişir': 'On · colours follow the sun', 'Kapalı · sabit renkler': 'Off · fixed colours',
   'Hava Paleti açık': 'Sky Palette on', 'Hava Paleti kapalı': 'Sky Palette off',
   'Demo verilerini sıfırla': 'Reset demo data', 'Tüm yerel kayıtlar silinir': 'All local data will be erased', 'Tüm demo verileri sıfırlansın mı?': 'Reset all demo data?',
-  'Hakkında': 'About', 'MoveCircle taslak sürüm 0.3 · tamamen çevrimdışı, sunucusuz': 'MoveCircle draft v0.3 · fully offline, no server',
+  'Hakkında': 'About', 'MoveCircle taslak sürüm 0.5 · gerçek çevrimdışı harita (Kadıköy), sunucusuz': 'MoveCircle draft v0.5 · real offline map (Kadıköy), no server',
   'Dil': 'Language', 'Türkçe': 'Türkçe', 'English': 'English',
+  // Gerçek harita (Kadıköy)
+  'Simülasyon': 'Simulation', 'Gerçek GPS': 'Real GPS', 'GPS hazır': 'GPS ready', 'GPS güçlü': 'GPS strong', 'GPS orta': 'GPS fair', 'GPS zayıf': 'GPS weak',
+  'Konum bekleniyor…': 'Waiting for location…', 'Konum izni yok': 'No location permission', '(ayarlardan izin ver)': '(allow it in settings)',
+  'Konum alınamadı': 'Location unavailable', '(tekrar deneniyor)': '(retrying)', 'Gerçek GPS için konum iznine izin ver': 'Allow location access for real GPS',
+  'Mod, kayıt başlamadan değiştirilebilir': 'Mode can be changed before recording starts', 'Bu cihaz konum desteklemiyor': 'This device does not support location',
+  'Harita Kadıköy bölgesini gösteriyor; kayıt yine de doğru ölçülür': 'The map covers Kadıköy; your recording is still measured correctly',
+  'Konumun harita bölgesinin (Kadıköy) dışında': 'You are outside the map area (Kadıköy)',
+  'Moda Sahil Koşucuları': 'Moda Seafront Runners', 'Bağdat Pedal Kulübü': 'Bağdat Pedal Club', 'Moda Gece Koşusu': 'Moda Night Run',
+  'Moda Sahili, Kadıköy': 'Moda seafront, Kadıköy', 'Caddebostan Sahili': 'Caddebostan seafront', 'Validebağ Sabah Yürüyüşü': 'Validebağ Morning Walk',
+  'Validebağ Korusu girişi': 'Validebağ Grove entrance', 'Kadıköy Sahil Yarı Maratonu': 'Kadıköy Seafront Half Marathon', 'Moda – Bostancı sahili': 'Moda – Bostancı seafront',
+  'Çamlıca Trail Festivali': 'Çamlıca Trail Festival', 'Büyük Çamlıca Korusu': 'Büyük Çamlıca Grove',
+  'Moda Sahil Akşam Turu': 'Moda Seafront Evening Run', 'Moda Sokakları Döngüsü': 'Moda Streets Loop', 'Büyük Çamlıca Tırmanışı': 'Büyük Çamlıca Climb',
+  'Göztepe Parkı 5K': 'Göztepe Park 5K', 'Fenerbahçe Burnu Koşusu': 'Fenerbahçe Point Run', 'Validebağ Korusu Turu': 'Validebağ Grove Loop',
+  'Caddebostan Sahil Uzun Koşu': 'Caddebostan Seafront Long Run', 'Bağdat Caddesi Bisiklet Rotası': 'Bağdat Avenue Bike Route',
+  'Kadıköy, İstanbul': 'Kadıköy, Istanbul', '© OpenStreetMap katkıda bulunanlar · Copernicus DEM (Open-Meteo)': '© OpenStreetMap contributors · Copernicus DEM (Open-Meteo)',
   // Rota ve aktivite adları
   'Sahil Akşam Turu': 'Coastal Evening Loop', 'Martılı Blok Döngüsü': 'Martılı Block Loop', 'Kuzeytepe Tırmanışı': 'Kuzeytepe Climb', 'Çınaraltı 5K': 'Çınaraltı 5K',
   'Yelkenli Liman Koşusu': 'Yelkenli Harbour Run', 'Rüzgâr Parkı Turu': 'Wind Park Loop', 'Körfez Uzun Koşu': 'Bay Long Run', 'Bağlarbaşı Bisiklet Rotası': 'Bağlarbaşı Bike Route',
@@ -127,6 +142,7 @@ const EN = {
 
 // ---- Kalıplı metinler ----
 const RULES = [
+  [/^\(±(\d+) m\)$/, '(±$1 m)'],
   [/^(₺[\d.,]+)'den başlayan fiyatlarla$/, 'From $1'],
   [/^%(\d+)$/, '$1%'],
   [/^Bu sokaktan 1 kez geçtin$/, "You've passed this street once"],
@@ -169,6 +185,7 @@ const RULES = [
   [/^(.+): taslak sürümde devre dışı$/, (m, a) => `${tr(a)}: disabled in this draft`],
   [/^(\d+)sa (\d+)dk$/, '$1h $2m'], [/^(\d+)sa (\d+)dk$/, '$1h $2m'],
   [/^PAFTA (.+) · (.+) · LİMAN ŞEHRİ$/, 'SHEET $1 · $2 · LIMAN CITY'],
+  [/^PAFTA (.+) · (.+) · KADIKÖY$/, 'SHEET $1 · $2 · KADIKÖY'],
   [/^Demo hızı: (.+)$/, 'Demo speed: $1'],
   [/^(Sabah|Öğleden Sonra|Akşam|Gece) (Koşusu|Sürüşü|Yürüyüşü)$/, (m) => EN[m] || m],
 ];

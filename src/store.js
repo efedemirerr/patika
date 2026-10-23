@@ -1,19 +1,19 @@
 import { ROUTES, routeById } from './map/city.js';
 
-const KEY = 'patika-state-v1';
+const KEY = 'patika-state-v2'; // v2: gerçek harita (Kadıköy) koordinatları
 
 export const USERS = {
-  me: { id: 'me', name: 'Arda Yel', color: '#7b61ff', city: 'Liman Şehri' },
-  u1: { id: 'u1', name: 'Selin Aksoy', color: '#ff7a59', city: 'Liman Şehri' },
-  u2: { id: 'u2', name: 'Bora Tunç', color: '#20b2aa', city: 'Kuzeytepe' },
-  u3: { id: 'u3', name: 'Ece Karaca', color: '#e0a100', city: 'Sahilkent' },
+  me: { id: 'me', name: 'Arda Yel', color: '#7b61ff', city: 'Kadıköy, İstanbul' },
+  u1: { id: 'u1', name: 'Selin Aksoy', color: '#ff7a59', city: 'Moda' },
+  u2: { id: 'u2', name: 'Bora Tunç', color: '#20b2aa', city: 'Acıbadem' },
+  u3: { id: 'u3', name: 'Ece Karaca', color: '#e0a100', city: 'Caddebostan' },
 };
 
 export const CLUBS = [
-  { id: 'c1', name: 'Kordon Koşucuları', sport: 'run', members: 214, place: 'Martılı' },
-  { id: 'c2', name: 'Yelkenli Pedal Kulübü', sport: 'ride', members: 96, place: 'Yelkenli' },
-  { id: 'c3', name: 'Şafak Adımları', sport: 'walk', members: 58, place: 'Çınaraltı' },
-  { id: 'c4', name: 'Tepe Avcıları Trail', sport: 'run', members: 131, place: 'Kuzeytepe' },
+  { id: 'c1', name: 'Moda Sahil Koşucuları', sport: 'run', members: 214, place: 'Moda' },
+  { id: 'c2', name: 'Bağdat Pedal Kulübü', sport: 'ride', members: 96, place: 'Caddebostan' },
+  { id: 'c3', name: 'Şafak Adımları', sport: 'walk', members: 58, place: 'Göztepe' },
+  { id: 'c4', name: 'Tepe Avcıları Trail', sport: 'run', members: 131, place: 'Çamlıca' },
 ];
 
 export const CHALLENGES = [
@@ -23,14 +23,14 @@ export const CHALLENGES = [
 ];
 
 export const EVENTS = [
-  { id: 'e1', title: 'Kordon Gece Koşusu', club: 'Kordon Koşucuları', members: 214, date: offsetDate(0, 19), place: 'Kordon Atletizm Alanı, Martılı', sport: 'run' },
-  { id: 'e2', title: 'Pazar Sahil Sürüşü', club: 'Yelkenli Pedal Kulübü', members: 96, date: offsetDate(3, 8), place: 'Fener Bahçesi, Yelkenli', sport: 'ride' },
-  { id: 'e3', title: 'Çamlık Sabah Yürüyüşü', club: 'Şafak Adımları', members: 58, date: offsetDate(5, 7), place: 'Çamlık Korusu girişi', sport: 'walk' },
+  { id: 'e1', title: 'Moda Gece Koşusu', club: 'Moda Sahil Koşucuları', members: 214, date: offsetDate(0, 19), place: 'Moda Sahili, Kadıköy', sport: 'run' },
+  { id: 'e2', title: 'Pazar Sahil Sürüşü', club: 'Bağdat Pedal Kulübü', members: 96, date: offsetDate(3, 8), place: 'Caddebostan Sahili', sport: 'ride' },
+  { id: 'e3', title: 'Validebağ Sabah Yürüyüşü', club: 'Şafak Adımları', members: 58, date: offsetDate(5, 7), place: 'Validebağ Korusu girişi', sport: 'walk' },
 ];
 
 export const RACES = [
-  { id: 'rc1', title: 'Liman Şehri Yarı Maratonu', date: offsetDate(10, 9), place: 'Sahilkent, Liman Şehri', dist: '10K · 21K', runners: 1240, hue: 28, scene: 'city' },
-  { id: 'rc2', title: 'Kuzeytepe Trail Festivali', date: offsetDate(24, 8), place: 'Kuzeytepe Ormanı', dist: '15K · 30K', runners: 410, hue: 140, scene: 'trail' },
+  { id: 'rc1', title: 'Kadıköy Sahil Yarı Maratonu', date: offsetDate(10, 9), place: 'Moda – Bostancı sahili', dist: '10K · 21K', runners: 1240, hue: 28, scene: 'city' },
+  { id: 'rc2', title: 'Çamlıca Trail Festivali', date: offsetDate(24, 8), place: 'Büyük Çamlıca Korusu', dist: '15K · 30K', runners: 410, hue: 140, scene: 'trail' },
 ];
 
 export const NOTIFS = [

@@ -2,17 +2,20 @@
 // Tamamen yerel: konum yakınlığı ve durum cihazda tutulur.
 import L from 'leaflet';
 import { store } from '../store.js';
+import { routeById, walkPath } from '../map/city.js';
 import { shortDate, esc, icon } from '../util.js';
 import { sheet, closeBtn, toast } from '../ui.js';
 
-export const NEAR = 14; // harita birimi (~140 m)
+export const NEAR = 14; // harita birimi (~170 m)
 
 export function capsules() {
   const s = store.get();
   if (!Array.isArray(s.capsules)) {
-    // İlk açılışta bir örnek kapsül: Sahil Akşam Turu'nun ilk kilometresinde
+    // İlk açılışta bir örnek kapsül: Moda Sahil Akşam Turu'nun ilk kilometresinde
     const d = new Date(); d.setDate(d.getDate() - 31);
-    s.capsules = [{ id: 'cap1', x: 442.0, y: 282.8, text: 'Geçen ay buradan geçerken 5K’yı ilk kez durmadan koştun. Bugün de yapabilirsin.', created: d.toISOString(), opened: null }];
+    const r1 = routeById('r1');
+    const [x, y] = walkPath(r1.pts, r1.distance * 0.12).point;
+    s.capsules = [{ id: 'cap1', x: +x.toFixed(1), y: +y.toFixed(1), text: 'Geçen ay buradan geçerken 5K’yı ilk kez durmadan koştun. Bugün de yapabilirsin.', created: d.toISOString(), opened: null }];
     store.save();
   }
   return s.capsules;

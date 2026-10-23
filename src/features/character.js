@@ -1,6 +1,6 @@
 // Rota Karakter Kartı: rotayı mesafeden önce karakteriyle tanıtır (dönüş, yeşil, su, eğim).
-// Tamamen yerel: rota geometrisi + çevrimdışı şehir katmanları.
-import { PARKS, HILL, coastY, elevation, METERS_PER_UNIT } from '../map/city.js';
+// Tamamen yerel: rota geometrisi + OpenStreetMap parkları, kıyı çizgisi ve DEM yüksekliği.
+import { greenAt as inGreen, coastDistance, elevation, METERS_PER_UNIT } from '../map/city.js';
 
 export const TRAITS = [
   { key: 'turns', label: 'Dönüş', icon: '<path d="M4 18 8 8l4 8 4-8 4 10"/>' },
@@ -16,9 +16,8 @@ export const MOODS = [
   { key: 'explore', label: 'Keşif', score: (c) => c.turns.v * 1.3 + c.green.v * 0.4 },
 ];
 
-const greenAt = ([x, y]) =>
-  PARKS.some((p) => Math.hypot(x - p.cx, y - p.cy) < p.r * 1.5) || Math.hypot(x - HILL.x, y - HILL.y) < HILL.r * 0.85;
-const waterAt = ([x, y]) => y - coastY(x) < 40;
+const greenAt = ([x, y]) => inGreen(x, y);
+const waterAt = ([x, y]) => coastDistance(x, y) < 250;
 
 const level = (v, [a, b, c]) => (v >= c ? 3 : v >= b ? 2 : v >= a ? 1 : 0);
 const cache = new Map();

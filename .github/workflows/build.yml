@@ -69,6 +69,8 @@ jobs:
           sleep 4
           node scripts/smoke.mjs
           node scripts/press.mjs
+          node scripts/walkthrough.mjs
+          ffmpeg -v error -y -i smoke-out/video/walkthrough.webm -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -movflags +faststart smoke-out/video/movecircle-walkthrough.mp4 && rm smoke-out/video/walkthrough.webm
           cd smoke-out && git init -q && git checkout -q -b smoke && git add . \
             && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "smoke ${GITHUB_SHA::7}" \
             && git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" smoke

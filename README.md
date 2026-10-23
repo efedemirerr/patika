@@ -1,8 +1,17 @@
 # MoveCircle — fitness takip uygulaması taslağı
 
 Tamamen **frontend**, **sunucusuz** ve **çevrimdışı** çalışan bir koşu/bisiklet takip uygulaması taslağı.
-Tüm isimler, mekânlar, kulüpler ve yarışlar kurgusaldır. Harita, kod ile üretilen kurgusal bir şehirdir
-("Liman Şehri"); hiçbir döşeme (tile) sunucusuna veya API'ye istek atılmaz.
+Kişi, kulüp ve etkinlik adları kurgusaldır; harita ise **gerçektir**: İstanbul, Kadıköy çevresi
+(Moda, Fenerbahçe, Caddebostan, Göztepe, Validebağ, Çamlıca). Uygulama çalışırken hiçbir harita sunucusuna istek atılmaz.
+
+## Gerçek, çevrimdışı harita
+- **Altlık:** `public/maps/kadikoy.pmtiles` — Protomaps (OpenStreetMap) dünya dosyasından yalnızca bu bölge, GitHub Actions'ta
+  `pmtiles extract` ile kesilir (~10 MB, z15). Web'de aralık istekleriyle, Android'de belleğe alınarak `protomaps-leaflet` ile çizilir.
+  Dosya yoksa (ör. yerel geliştirme) OSM'den derlenen vektör katmanlar (kıyı, park, yollar) kullanılır.
+- **Rotalar ve katmanlar:** `src/map/data.json` — gerçek sokakları izleyen 8 rota (OSRM yaya/bisiklet), kıyı çizgisi, parklar, yollar,
+  yükseklik ızgarası (Copernicus DEM). Yeniden üretmek için Actions → **Harita verisi** iş akışını çalıştır (`scripts/fetch-map-data.mjs`).
+- **Gerçek GPS:** Kayıt ekranında **Simülasyon / Gerçek GPS** seçimi. Gerçek modda telefonun konumu kaydedilir (web'de https, Android'de konum izni).
+  Ekran açıkken kayıt yapar; arka planda kayıt henüz yok. Harita Kadıköy'ü kapsar, bölge dışında da mesafe ve süre doğru ölçülür.
 
 ## Ekranlar
 | Sekme | İçerik |

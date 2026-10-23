@@ -29,6 +29,32 @@ jobs:
       - name: Bağımlılıklar
         run: npm ci
 
+      # Gerçek, çevrimdışı harita: Protomaps (OpenStreetMap) dünya dosyasından yalnızca Kadıköy çevresi kesilir.
+      # Dosya web sürümünde ve APK'nın içinde statik olarak durur; uygulama çalışırken hiçbir harita sunucusuna bağlanmaz.
+      - name: Harita önbelleği
+        id: mapcache
+        uses: actions/cache@v4
+        with:
+          path: public/maps/kadikoy.pmtiles
+          key: pmtiles-kadikoy-z15-v1
+
+      - name: Çevrimdışı harita dosyasını kes (PMTiles)
+        if: steps.mapcache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p public/maps /tmp/pmt
+          url=$(gh api repos/protomaps/go-pmtiles/releases/latest --jq '.assets[] | select(.name | test("Linux_x86_64.tar.gz$")) | .browser_download_url')
+          curl -sL "$url" | tar xz -C /tmp/pmt
+          for i in $(seq 0 20); do
+            d=$(date -u -d "-$i day" +%Y%m%d)
+            if curl -sfI "https://build.protomaps.com/$d.pmtiles" >/dev/null; then src="https://build.protomaps.com/$d.pmtiles"; break; fi
+          done
+          echo "kaynak: $src"
+          /tmp/pmt/pmtiles extract "$src" public/maps/kadikoy.pmtiles --bbox=29.0,40.936,29.143,41.044 --maxzoom=15
+          ls -lh public/maps
+
       - name: Web build
         run: npm run build
 

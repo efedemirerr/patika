@@ -3,3 +3,4 @@ dist/
 *.apk
 *.zip
 .DS_Store
+public/maps/*.pmtiles

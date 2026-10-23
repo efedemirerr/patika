@@ -24,8 +24,15 @@ async function getJSON(url, opts = {}, tries = 4) {
 }
 
 // ---------- geometri yardımcıları ----------
-function simplify(pts, tol) { // Douglas–Peucker
+function simplify(pts, tol) { // Douglas–Peucker (kapalı halkalar en uzak noktadan ikiye bölünür)
   if (pts.length < 3) return pts;
+  const [fx, fy] = pts[0], [lx, ly] = pts[pts.length - 1];
+  if (Math.hypot(fx - lx, fy - ly) < 1e-6) {
+    let far = 1, fd = 0;
+    for (let i = 1; i < pts.length - 1; i++) { const d = Math.hypot(pts[i][0] - fx, pts[i][1] - fy); if (d > fd) { fd = d; far = i; } }
+    const a = simplify(pts.slice(0, far + 1), tol), b = simplify(pts.slice(far), tol);
+    return a.concat(b.slice(1));
+  }
   const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
   const st = [[0, pts.length - 1]];
   while (st.length) {
@@ -45,7 +52,7 @@ function despike(pts, maxLen = 160 / M) {
       // i noktasında yön tamamen tersine dönüyorsa ve geri dönülen kısım kısaysa, ileri-geri kısmı kes
       for (let k = 1; k < 40 && i - k >= 0 && i + k < p.length; k++) {
         const a = p[i - k], b = p[i + k];
-        if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.6) {
+        if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.05) {
           let len = 0; for (let j = i - k + 1; j <= i; j++) len += Math.hypot(p[j][0] - p[j - 1][0], p[j][1] - p[j - 1][1]);
           if (len <= maxLen) { p.splice(i - k + 1, 2 * k); changed = true; break; }
         } else break;
@@ -126,6 +133,8 @@ async function osm() {
     const merged = e.type === 'way' ? rings.map(wayPts) : chain(rings.map(wayPts));
     for (const r of merged) {
       if (r.length < 4 || !r.some((p) => inBox(p, 0))) continue;
+      const c0 = r.reduce((t, p) => [t[0] + p[0] / r.length, t[1] + p[1] / r.length], [0, 0]);
+      if (!inBox(c0, 30)) continue;
       const area = polyArea(r) * M * M;
       if (area < 6000) continue;
       const s = simplify(r, 0.8);

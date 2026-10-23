@@ -6,7 +6,7 @@ const OUT = 'smoke-out/video'; mkdirSync(OUT, { recursive: true });
 const b = await chromium.launch();
 const ctx = await b.newContext({
   viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
-  recordVideo: { dir: OUT, size: { width: 780, height: 1688 } },
+  recordVideo: { dir: OUT, size: { width: 390, height: 844 } },
   geolocation: { latitude: 40.9806, longitude: 29.0267 }, permissions: ['geolocation'],
 });
 await ctx.addInitScript(() => {

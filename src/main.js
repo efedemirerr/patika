@@ -48,7 +48,15 @@ function route() {
   document.querySelectorAll('.sheet-wrap').forEach((s) => s.remove());
   nav.style.display = r.hideNav ? 'none' : '';
   drawNav(r.nav);
-  cleanup = r.render(view, new URLSearchParams(query), sub) || null;
+  try {
+    cleanup = r.render(view, new URLSearchParams(query), sub) || null;
+  } catch (err) {
+    console.error(err);
+    // Bozuk/eski yerel veri ekranı karartmasın: bir kez otomatik sıfırla, olmazsa kurtarma kartı göster.
+    if (!sessionStorage.getItem('mc-recovered')) { sessionStorage.setItem('mc-recovered', '1'); store.reset(); return route(); }
+    view.innerHTML = `<div class="card info" style="margin:40px 16px"><h2>Bir şeyler ters gitti</h2><p class="muted">Ekran yüklenemedi.</p><button class="btn primary block" data-hardreset>Verileri sıfırla ve yeniden aç</button></div>`;
+    view.querySelector('[data-hardreset]').onclick = () => { store.reset(); location.hash = '#/home'; location.reload(); };
+  }
   if (!r.full) window.scrollTo(0, 0);
 }
 

@@ -16,6 +16,7 @@ export function setLang(l) {
 // ---- Tam eşleşen metinler ----
 const EN = {
   // MoveCircle+
+  'Bir şeyler ters gitti': 'Something went wrong', 'Ekran yüklenemedi.': 'This screen could not load.', 'Verileri sıfırla ve yeniden aç': 'Reset data and reopen',
   'Ücretsiz deneme aktif': 'Free trial active', 'Abonelik aktif': 'Subscription active', 'Gelişmiş istatistikler': 'Advanced stats',
   'Ortalama tempo': 'Average pace', 'En hızlı koşu': 'Fastest run', 'Haftalık ortalama': 'Weekly average', 'Toplam koşu': 'Total runs',
   '5K tahmini': '5K estimate', '10K tahmini': '10K estimate', 'Tempo, en hızlı koşu ve 5K / 10K tahmini için yükselt': 'Upgrade for pace, fastest run and 5K / 10K estimates',

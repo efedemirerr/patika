@@ -46,13 +46,15 @@
   const fit = () => { const s = screen.clientWidth / 390; app.style.transform = `scale(${s})`; app.style.height = (screen.clientHeight / s) + 'px'; };
   addEventListener('resize', fit); fit();
   let lang = 'tr'; try { lang = localStorage.getItem('movecircle-lang') || 'tr'; localStorage.setItem('movecircle-lang', lang); } catch (e) {}
-  app.src = './#/home';
+  app.src = './?v=' + Date.now() + '#/home';
+  // Uygulama 6 sn içinde çizilmezse bir kez yeniden yükle.
+  setTimeout(() => { try { const d = app.contentDocument; if (!d || !d.querySelector('#view *')) app.contentWindow.location.reload(); } catch (e) {} }, 6000);
   const mark = () => document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
   mark();
   document.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.go) app.contentWindow.location.hash = '#/' + b.dataset.go;
-    if (b.dataset.lang) { lang = b.dataset.lang; try { localStorage.setItem('movecircle-lang', lang); } catch (e) {} mark(); app.contentWindow.location.reload(); }
+    if (b.dataset.lang) { lang = b.dataset.lang; try { localStorage.setItem('movecircle-lang', lang); } catch (e) {} mark(); app.src = './?v=' + Date.now() + '#/home'; }
     if (b.id === 'fs') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
   });
 </script>

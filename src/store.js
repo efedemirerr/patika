@@ -95,7 +95,13 @@ function defaults() {
 }
 
 let state;
-try { state = JSON.parse(localStorage.getItem(KEY)) || defaults(); } catch { state = defaults(); }
+try {
+  const saved = JSON.parse(localStorage.getItem(KEY));
+  const base = defaults();
+  // Eski sürümlerden kalan kayıtlar: eksik alanları varsayılanlarla tamamla.
+  state = saved && typeof saved === 'object' && Array.isArray(saved.activities) ? { ...base, ...saved, me: { ...base.me, ...(saved.me || {}) } } : base;
+  for (const k of ['savedRoutes', 'joinedClubs', 'joinedChallenges', 'joinedEvents']) if (!Array.isArray(state[k])) state[k] = base[k];
+} catch { state = defaults(); }
 
 export const store = {
   get: () => state,
